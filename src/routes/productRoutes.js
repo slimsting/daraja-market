@@ -2,17 +2,18 @@ import express from "express";
 import {
   createProduct,
   getAllProducts,
-  getProduct,
-  updateProduct,
-  deleteProduct,
+  getProductByID,
+  updateProductById,
+  deleteProductById,
 } from "../controllers/productController.js";
+import userAuth from "../middleware/userAuth.js";
 
 const productRouter = express.Router();
 
-productRouter.post("/products", createProduct);
-productRouter.get("/products", getAllProducts);
-productRouter.get("/products/:id", getProduct);
-productRouter.put("/products/:id", updateProduct);
-productRouter.delete("/products/:id", deleteProduct);
+productRouter.post("/", userAuth, createProduct);
+productRouter.get("/", userAuth, getAllProducts);
+productRouter.get("/:productId", userAuth, getProductByID);
+productRouter.put("/:productId", userAuth, updateProductById);
+productRouter.delete("/:productId", userAuth, deleteProductById);
 
 export default productRouter;

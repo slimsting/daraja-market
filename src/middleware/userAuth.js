@@ -51,7 +51,7 @@ const userAuth = async (req, res, next) => {
     }
 
     // Attach user ID to request object for use in controllers
-    req.body.userId = decodedToken.id;
+    // req.body.userId = decodedToken.id;
     req.user = { id: decodedToken.id }; // Standard practice: also attach to req.user
 
     // Proceed to next middleware

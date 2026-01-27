@@ -1,8 +1,16 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { trusted } from "mongoose";
 
+/**
+ * Register a new user
+ * @description creates new user account and sets authenticaton cookie
+ * @access Public
+ * @route POST /api/auth/register
+ * @param {Object} req Express request object
+ * @param {Object*} res Express request object
+ * @returns {Object} success message or error
+ */
 export const register = async (req, res) => {
   try {
     const data = req.body;
@@ -44,6 +52,15 @@ export const register = async (req, res) => {
   }
 };
 
+/**
+ * Login user
+ * @description Authenticates user and sets authentication cookie
+ * @access Public
+ * @route POST /api/auth/login
+ * @param {Object} req Express request object
+ * @param {Object*} res Express request object
+ * @returns {Object} success message or error
+ */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -93,4 +110,63 @@ export const login = async (req, res) => {
   }
 };
 
-export const getCurrentUser = (req, res) => {};
+/**
+ * Logout user
+ * @description Clears authentication cookie
+ * @access Public
+ * @route POST /api/auth/logout
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} Success message
+ */
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to logout. Please try again later",
+    });
+  }
+};
+
+/**
+ * Get current user
+ * @description Authenticates user and sets authentication cookie
+ * @access Private
+ * @route Get /api/auth/me
+ * @param {Object} req Express request object
+ * @param {Object*} res Express request object
+ * @returns {Object} success message with current user ifo or an error
+ */
+export const getCurrentUser = async (req, res) => {
+  try {
+    const currentUserId = req.user.id;
+
+    const currentUser = await User.findById(currentUserId).select(
+      " -_id -createdAt -updatedAt -__v -password",
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Current user retrieved successfuly",
+      data: currentUser,
+    });
+  } catch (error) {
+    console.error("Error getting current user: ", error);
+    return res.status(500).json({
+      success: false,
+      message: "Could not retrieve current user at this time. Try again later",
+    });
+  }
+};
