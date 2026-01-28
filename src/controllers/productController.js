@@ -66,27 +66,68 @@ export const getAllProducts = async (req, res) => {
       });
     }
 
-    const currentUser = await User.findById(currentUserId).select("role");
-    if (!currentUser) {
+    const { role: currentUserRole } =
+      await User.findById(currentUserId).select("role");
+    if (!currentUserRole) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
-    let query = {};
-    if (["farmer", "broker"].includes(currentUser.role)) {
-      query = { farmer: currentUserId };
-    } else if (currentUser.role === "admin") {
-      query = {}; // all products
-    } else {
+    if (!["admin", "broker"].includes(currentUserRole)) {
       return res.status(403).json({
         success: false,
         message: "Access denied. Insufficient permissions",
       });
     }
 
-    const products = await Product.find(query)
+    const products = await Product.find()
+      .select("-__v -createdAt -updatedAt") // exclude internal version key
+      .populate("farmer", "name email phone")
+      .lean(); // return plain JS objects for performance
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully retrieved products",
+      data: products,
+    });
+  } catch (error) {
+    console.error("❌ Error retrieving products:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error while retrieving products. Try again later",
+    });
+  }
+};
+
+export const getAllMyProducts = async (req, res) => {
+  try {
+    const currentUserId = req.user?.id;
+    if (!currentUserId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized. Please login first",
+      });
+    }
+
+    const { role: currentUserRole } =
+      await User.findById(currentUserId).select("role");
+    if (!currentUserRole) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (currentUserRole !== "farmer") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Insufficient permissions",
+      });
+    }
+
+    const products = await Product.find()
       .select("-__v -createdAt -updatedAt") // exclude internal version key
       .populate("farmer", "name email phone")
       .lean(); // return plain JS objects for performance

@@ -13,9 +13,9 @@ import jwt from "jsonwebtoken";
  */
 export const register = async (req, res) => {
   try {
-    const data = req.body;
+    const registeringUserData = req.body;
     //does user the email exist in db
-    const userExists = await User.findOne({ email: data.email });
+    const userExists = await User.findOne({ email: registeringUserData.email });
     //exit with an error if they do
     if (userExists) {
       return res.status(404).json({
@@ -23,11 +23,26 @@ export const register = async (req, res) => {
         message: "User already exists with that email",
       });
     }
+
+    //if user roler is admin check if they have provided the correct admin reg code else return error
+    if (registeringUserData.role === "admin") {
+      const adminRegCodeIsValid =
+        registeringUserData.adminCode === process.env.ADMIN_REG_CODE;
+      if (!adminRegCodeIsValid) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Invalid admin registration code" });
+      }
+    }
+
     //else create the user and store it in db
     // first hash the password hash password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await bcrypt.hash(registeringUserData.password, 10);
     // create new user object with updated hashed password
-    const newUser = new User({ ...data, password: hashedPassword });
+    const newUser = new User({
+      ...registeringUserData,
+      password: hashedPassword,
+    });
     //save new user
     await newUser.save();
     // generate jwt token
@@ -142,7 +157,7 @@ export const logout = async (req, res) => {
 
 /**
  * Get current user
- * @description Authenticates user and sets authentication cookie
+ * @description
  * @access Private
  * @route Get /api/auth/me
  * @param {Object} req Express request object

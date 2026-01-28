@@ -1,22 +1,8 @@
 import { body, validationResult } from "express-validator";
-
-export const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.json({
-      success: false,
-      message: "Validation failed",
-      errors: errors.array().map((error) => ({
-        field: error.path,
-        message: error.msg,
-      })),
-    });
-  }
-  next();
-};
+import { handleValidationErrors } from "./utils/utils.js";
 
 // Register validation
-export const validateRegister = [
+export const registerValidationRules = [
   body("name")
     .trim()
     .notEmpty()
@@ -43,11 +29,15 @@ export const validateRegister = [
     .withMessage("Phone number must contain only digits")
     .isLength({ min: 10, max: 15 })
     .withMessage("Phone number must be between 10 to 15 digits"),
+  body("adminRegCode")
+    .optional()
+    .isString()
+    .withMessage("admin registration code must be a string"),
   handleValidationErrors,
 ];
 
 // Login validation
-export const validateLogin = [
+export const loginValidationRules = [
   body("email")
     .trim()
     .notEmpty()

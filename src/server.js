@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import cartRouter from "./routes/cartRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import cookieParser from "cookie-parser";
 
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
+app.use("/api/cart", cartRouter);
 
 const startServer = async () => {
   try {

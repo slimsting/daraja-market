@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
       enum: ["farmer", "broker", "admin"],
       default: "farmer",
     },
+    adminRegCode: { type: String },
     phone: { type: String, required: true },
     location: {
       county: String,
