@@ -1,5 +1,5 @@
 import { body, validationResult } from "express-validator";
-import { handleValidationErrors } from "./utils/utils.js";
+import { handleValidationErrors } from "../utils/utils.js";
 
 // Register validation
 export const registerValidationRules = [

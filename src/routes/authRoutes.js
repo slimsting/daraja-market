@@ -9,7 +9,7 @@ import userAuth from "../middleware/userAuth.js";
 import {
   loginValidationRules,
   registerValidationRules,
-} from "../middleware/authValidation.js";
+} from "../middleware/validators/authValidator.js";
 
 const authRouter = express.Router();
 

@@ -8,7 +8,7 @@ import {
   deleteProductById,
 } from "../controllers/productController.js";
 import userAuth from "../middleware/userAuth.js";
-import { productValidationRules } from "../middleware/productValidation.js";
+import { productValidationRules } from "../middleware/validators/productValidator.js";
 import authorize from "../middleware/authorize.js";
 
 const productRouter = express.Router();
@@ -16,7 +16,7 @@ const productRouter = express.Router();
 productRouter.post(
   "/",
   userAuth,
-  authorize("farmer"), // can authorize admin and broker or multiple roles if need be
+  authorize("farmer"),
   productValidationRules("create"),
   createProduct,
 );

@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { handleValidationErrors } from "./utils/utils.js";
+import { handleValidationErrors } from "../utils/utils.js";
 
 export const productValidationRules = (mode = "create") => {
   const isCreate = mode === "create";

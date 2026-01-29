@@ -15,4 +15,6 @@ build/
 
 # IDE
 .vscode/
-.idea/
+.idea/\
+errors.log
+combined.log
