@@ -16,7 +16,7 @@ const userAuth = async (req, res, next) => {
     // verify and decode jwt token
     let decodedToken;
     try {
-      decodedToken = jwt.decode(token, process.env.JWT_SECRET);
+      decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     } catch (jwtError) {
       // Handle specific JWT errors
       if (jwtError.name === "TokenExpiredError") {

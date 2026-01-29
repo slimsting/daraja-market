@@ -1,5 +1,7 @@
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
+import { sanitizeDocument } from "../utils/sanitizer.js";
+import { successResponse } from "../utils/responseHandler.js";
 
 export const getAllFarmers = async (req, res) => {
   try {
@@ -26,14 +28,16 @@ export const getAllFarmers = async (req, res) => {
     }
 
     const farmers = await User.find({ role: "farmer" })
-      .select("name email role phone location") // include only safe fields
+      .select("name email role phone location")
       .lean();
 
-    return res.status(200).json({
-      success: true,
-      message: "Successfully retrieved all farmers",
-      data: farmers,
-    });
+    return successResponse(
+      res,
+      farmers.map((f) =>
+        sanitizeDocument(f, ["__v", "createdAt", "updatedAt"]),
+      ),
+      "Successfully retrieved all farmers",
+    );
   } catch (error) {
     console.error("❌ Error retrieving farmers:", error);
     return res.status(500).json({
@@ -68,14 +72,16 @@ export const getAllBrokers = async (req, res) => {
     }
 
     const brokers = await User.find({ role: "broker" })
-      .select("name email role") // include only safe fields
+      .select("name email role")
       .lean();
 
-    return res.status(200).json({
-      success: true,
-      message: "Successfully retrieved all brokers",
-      data: brokers,
-    });
+    return successResponse(
+      res,
+      brokers.map((b) =>
+        sanitizeDocument(b, ["__v", "createdAt", "updatedAt"]),
+      ),
+      "Successfully retrieved all brokers",
+    );
   } catch (error) {
     console.error("❌ Error retrieving brokers:", error);
     return res.status(500).json({

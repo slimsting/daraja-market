@@ -1,6 +1,7 @@
 import Cart from "../models/cartModel.js";
 import Product from "../models/productModel.js";
 import Order from "../models/orderModel.js";
+import { sanitizeDocument } from "../utils/sanitizer.js";
 
 export const addToCart = async (req, res) => {
   try {
@@ -35,15 +36,10 @@ export const addToCart = async (req, res) => {
 
     await cart.save();
 
-    const safeCart = cart.toObject(cart);
-    delete safeCart.__v;
-    delete safeCart.createdAt;
-    delete safeCart.updatedAt;
-
     return res.status(200).json({
       success: true,
       message: "Item added to cart successfully",
-      data: safeCart,
+      data: sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]),
     });
   } catch (error) {
     console.error("Error adding to cart:", error);
@@ -70,10 +66,7 @@ export const getCart = async (req, res) => {
       });
     }
 
-    const safeCart = cart.toObject();
-    delete safeCart.createdAt;
-    delete safeCart.updatedAt;
-    delete safeCart.__v;
+    const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
 
     return res.status(200).json({
       success: true,
@@ -129,10 +122,7 @@ export const updateCartItem = async (req, res) => {
     await cart.save();
 
     // Sanitize response
-    const safeCart = cart.toObject();
-    delete safeCart.createdAt;
-    delete safeCart.updatedAt;
-    delete safeCart.__v;
+    const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
 
     return res.status(200).json({
       success: true,
@@ -152,8 +142,6 @@ export const removeCartItem = async (req, res) => {
   try {
     const userId = req.user.id;
     const { productId } = req.body;
-
-    console.log(productId);
 
     const cart = await Cart.findOne({ user: userId });
     if (!cart) {
@@ -177,10 +165,7 @@ export const removeCartItem = async (req, res) => {
     cart.items.splice(itemIndex, 1);
     await cart.save();
 
-    const safeCart = cart.toObject();
-    delete safeCart.createdAt;
-    delete safeCart.updatedAt;
-    delete safeCart.__v;
+    const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
 
     return res.status(200).json({
       success: true,
@@ -211,10 +196,7 @@ export const clearCart = async (req, res) => {
     cart.items = []; // empty the cart
     await cart.save();
 
-    const safeCart = cart.toObject();
-    delete safeCart.createdAt;
-    delete safeCart.updatedAt;
-    delete safeCart.__v;
+    const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
 
     return res.status(200).json({
       success: true,

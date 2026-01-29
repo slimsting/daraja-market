@@ -15,22 +15,23 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import loggerWinston from "./utils/logger.js";
+import CONFIG from "./config/constants.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Rate limiting: prevent brute-force attacks
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
-  message: { success: false, message: "Too many requests, try again later." },
+  windowMs: CONFIG.RATE_LIMIT.WINDOW_MS,
+  max: CONFIG.RATE_LIMIT.MAX_REQUESTS,
+  message: { success: false, message: CONFIG.RATE_LIMIT.MESSAGE },
 });
 app.use(limiter);
 app.use(
   cors({
-    origin: ["http://localhost:3000"], // whitelist frontend domain
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    origin: CONFIG.CORS.ORIGIN,
+    methods: CONFIG.CORS.METHODS,
+    credentials: CONFIG.CORS.CREDENTIALS,
   }),
 );
 
@@ -43,8 +44,13 @@ const stream = {
 // Use Morgan with Winston
 app.use(morgan("combined", { stream }));
 app.use(helmet()); //security
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: CONFIG.REQUEST.JSON_LIMIT }));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: CONFIG.REQUEST.URL_ENCODED_LIMIT,
+  }),
+);
 app.use(cookieParser());
 
 // Health check endpoint

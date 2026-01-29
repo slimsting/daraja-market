@@ -1,10 +1,12 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { setCookie, clearCookie } from "../utils/cookieUtils.js";
+import CONFIG from "../config/constants.js";
 
 /**
  * Register a new user
- * @description creates new user account and sets authenticaton cookie
+ * @description creates new user account and sets authentication cookie
  * @access Public
  * @route POST /api/auth/register
  * @param {Object} req Express request object
@@ -24,7 +26,7 @@ export const register = async (req, res) => {
       });
     }
 
-    //if user roler is admin check if they have provided the correct admin reg code else return error
+    //if user role is admin check if they have provided the correct admin reg code else return error
     if (registeringUserData.role === "admin") {
       const adminRegCodeIsValid =
         registeringUserData.adminCode === process.env.ADMIN_REG_CODE;
@@ -37,7 +39,10 @@ export const register = async (req, res) => {
 
     //else create the user and store it in db
     // first hash the password hash password
-    const hashedPassword = await bcrypt.hash(registeringUserData.password, 10);
+    const hashedPassword = await bcrypt.hash(
+      registeringUserData.password,
+      CONFIG.BCRYPT.ROUNDS,
+    );
     // create new user object with updated hashed password
     const newUser = new User({
       ...registeringUserData,
@@ -46,14 +51,11 @@ export const register = async (req, res) => {
     //save new user
     await newUser.save();
     // generate jwt token
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-    //set authentication cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: CONFIG.JWT.EXPIRY,
     });
+    //set authentication cookie
+    setCookie(res, token);
 
     return res
       .status(201)
@@ -100,15 +102,10 @@ export const login = async (req, res) => {
     }
     //else create token and set authenticatoin cookie
     const token = jwt.sign({ id: userExists._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: CONFIG.JWT.EXPIRY,
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setCookie(res, token);
     //return success
     const { name, userEmail, role, phone, location } = userExists;
     return res.status(200).json({
@@ -136,11 +133,7 @@ export const login = async (req, res) => {
  */
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    });
+    clearCookie(res);
 
     return res.status(200).json({
       success: true,

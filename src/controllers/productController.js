@@ -1,6 +1,8 @@
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
+import { sanitizeDocument } from "../utils/sanitizer.js";
+import { successResponse, errorResponse } from "../utils/responseHandler.js";
 
 export const createProduct = async (req, res) => {
   try {
@@ -19,17 +21,12 @@ export const createProduct = async (req, res) => {
     const newProduct = new Product(newProductData);
     await newProduct.save();
 
-    const safeProduct = newProduct.toObject();
-    delete safeProduct.__v;
-    delete safeProduct.createdAt;
-    delete safeProduct.updatedAt;
-    delete safeProduct._id;
-
-    return res.status(201).json({
-      success: true,
-      message: "Product created successfully",
-      data: safeProduct,
-    });
+    return successResponse(
+      res,
+      sanitizeDocument(newProduct, ["__v", "createdAt", "updatedAt", "_id"]),
+      "Product created successfully",
+      201,
+    );
   } catch (error) {
     console.error("❌Error creating new prodcut: ", error);
 
@@ -83,15 +80,17 @@ export const getAllProducts = async (req, res) => {
     }
 
     const products = await Product.find()
-      .select("-__v -createdAt -updatedAt") // exclude internal version key
+      .select("-__v -createdAt -updatedAt")
       .populate("farmer", "name email phone")
-      .lean(); // return plain JS objects for performance
+      .lean();
 
-    return res.status(200).json({
-      success: true,
-      message: "Successfully retrieved products",
-      data: products,
-    });
+    return successResponse(
+      res,
+      products.map((p) =>
+        sanitizeDocument(p, ["__v", "createdAt", "updatedAt"]),
+      ),
+      "Successfully retrieved products",
+    );
   } catch (error) {
     console.error("❌ Error retrieving products:", error);
     return res.status(500).json({
@@ -127,16 +126,18 @@ export const getAllMyProducts = async (req, res) => {
       });
     }
 
-    const products = await Product.find()
-      .select("-__v -createdAt -updatedAt") // exclude internal version key
+    const products = await Product.find({ farmer: currentUserId })
+      .select("-__v -createdAt -updatedAt")
       .populate("farmer", "name email phone")
-      .lean(); // return plain JS objects for performance
+      .lean();
 
-    return res.status(200).json({
-      success: true,
-      message: "Successfully retrieved products",
-      data: products,
-    });
+    return successResponse(
+      res,
+      products.map((p) =>
+        sanitizeDocument(p, ["__v", "createdAt", "updatedAt"]),
+      ),
+      "Successfully retrieved farmer products",
+    );
   } catch (error) {
     console.error("❌ Error retrieving products:", error);
     return res.status(500).json({
@@ -192,11 +193,11 @@ export const getProductByID = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Successfully retrieved product",
-      data: product,
-    });
+    return successResponse(
+      res,
+      sanitizeDocument(product, ["__v"]),
+      "Successfully retrieved product",
+    );
   } catch (error) {
     console.error("❌ Error retrieving product:", error);
     return res.status(500).json({
@@ -251,18 +252,13 @@ export const updateProductById = async (req, res) => {
 
     // Update product
     Object.assign(product, updates);
-    const updatedProduct = await product.save();
-    const safeProduct = updatedProduct.toObject();
+    await product.save();
 
-    delete safeProduct.__v;
-    delete safeProduct.createdAt;
-    delete safeProduct.updatedAt;
-
-    return res.status(200).json({
-      success: true,
-      message: "Product updated successfully",
-      data: safeProduct,
-    });
+    return successResponse(
+      res,
+      sanitizeDocument(product, ["__v", "createdAt", "updatedAt"]),
+      "Product updated successfully",
+    );
   } catch (error) {
     console.error("❌ Error updating product:", error);
     return res
@@ -323,11 +319,11 @@ export const deleteProductById = async (req, res) => {
     // Admin or authorized farmer → delete
     await product.deleteOne();
 
-    return res.status(200).json({
-      success: true,
-      message: "Product deleted successfully",
-      data: { _id: productId }, // return minimal info
-    });
+    return successResponse(
+      res,
+      { _id: productId },
+      "Product deleted successfully",
+    );
   } catch (error) {
     console.error("❌ Error deleting product:", error);
     return res

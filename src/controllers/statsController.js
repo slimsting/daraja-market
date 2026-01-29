@@ -1,6 +1,7 @@
 import User from "../models/userModel.js";
 import Product from "../models/productModel.js";
 import Order from "../models/orderModel.js";
+import { successResponse } from "../utils/responseHandler.js";
 
 export const getStats = async (req, res) => {
   try {
@@ -16,13 +17,13 @@ export const getStats = async (req, res) => {
         completed: await Order.countDocuments({ status: "completed" }),
       },
     };
-    res.status(200).json({
-      success: true,
-      message: "Retreived stats successfully",
-      data: stats,
-    });
+
+    return successResponse(res, stats, "Retrieved stats successfully", 200);
   } catch (error) {
-    console.error("Error retrieving stata", error);
-    res.status(500).json({ error: "Failed to fetch stats" });
+    console.error("Error retrieving stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch stats",
+    });
   }
 };
