@@ -31,47 +31,6 @@ export const sanitizeDocument = (
   return obj;
 };
 
-/**
- * Sanitize an array of documents
- * @param {Array} docs - Array of MongoDB documents
- * @param {Array} fieldsToRemove - Fields to delete
- * @returns {Array} Array of sanitized objects
- */
-export const sanitizeDocuments = (
-  docs,
-  fieldsToRemove = ["__v", "createdAt", "updatedAt", "password"],
-) => {
-  if (!Array.isArray(docs)) return [];
-  return docs.map((doc) => sanitizeDocument(doc, fieldsToRemove));
-};
-
-/**
- * Sanitize with custom field selection (whitelist approach)
- * @param {Object} doc - MongoDB document
- * @param {Array} fieldsToKeep - Only these fields will be included
- * @returns {Object} Object with only specified fields
- *
- * @example
- * const user = await User.findById(id);
- * const safeUser = sanitizeDocumentBySelection(user, ['name', 'email', 'role']);
- */
-export const sanitizeDocumentBySelection = (doc, fieldsToKeep) => {
-  if (!doc) return null;
-
-  const obj = doc.toObject ? doc.toObject() : { ...doc };
-  const result = {};
-
-  fieldsToKeep.forEach((field) => {
-    if (field in obj) {
-      result[field] = obj[field];
-    }
-  });
-
-  return result;
-};
-
 export default {
   sanitizeDocument,
-  sanitizeDocuments,
-  sanitizeDocumentBySelection,
 };

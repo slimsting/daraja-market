@@ -3,7 +3,7 @@ import Product from "../models/productModel.js";
 import Order from "../models/orderModel.js";
 import asyncHandler from "express-async-handler";
 import { sanitizeDocument } from "../utils/sanitizer.js";
-import { successResponse, errorResponse } from "../utils/responseHandler.js";
+import { successResponse } from "../utils/responseHandler.js";
 import logger from "../utils/logger.js";
 
 export const addToCart = asyncHandler(async (req, res) => {

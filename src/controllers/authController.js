@@ -5,7 +5,7 @@ import asyncHandler from "express-async-handler";
 import { setCookie, clearCookie } from "../utils/cookieUtils.js";
 import CONFIG from "../config/constants.js";
 import logger from "../utils/logger.js";
-import { errorResponse, successResponse } from "../utils/responseHandler.js";
+import { successResponse } from "../utils/responseHandler.js";
 
 /**
  * Register a new user

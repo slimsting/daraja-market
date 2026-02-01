@@ -51,25 +51,7 @@ export const errorResponse = (
   return res.status(status).json(response);
 };
 
-/**
- * Send a validation error response
- * @param {Object} res - Express response object
- * @param {Array} errors - Array of validation error objects
- * @returns {Object} JSON response
- */
-export const validationErrorResponse = (res, errors) => {
-  return res.status(400).json({
-    success: false,
-    message: "Validation failed",
-    errors: errors.map((error) => ({
-      field: error.path || error.field,
-      message: error.msg || error.message,
-    })),
-  });
-};
-
 export default {
   successResponse,
   errorResponse,
-  validationErrorResponse,
 };

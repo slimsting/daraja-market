@@ -7,7 +7,9 @@ const authorize = (...allowedRoles) => {
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      const error = new Error(`Access denied. Your role (${req.user.role}) is not authorized for this action`);
+      const error = new Error(
+        `Access denied. Your role (${req.user.role}) is not authorized for this action`,
+      );
       error.status = 403;
       throw error;
     }
