@@ -13,7 +13,7 @@ const cartSchema = new mongoose.Schema(
         quantity: { type: Number, required: true, min: 1 },
       },
     ],
-    status: { type: String, enum: ["active", "checkedout"], default: "active" },
+    status: { type: String, enum: ["active", "checkedOut"], default: "active" },
   },
   { timestamps: true },
 );

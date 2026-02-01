@@ -18,6 +18,13 @@ export const registerValidationRules = [
     .normalizeEmail(),
   body("password")
     .notEmpty()
+    .isStrongPassword({
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    })
     .withMessage("Password is required")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters long"),

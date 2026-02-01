@@ -1,4 +1,5 @@
 import express from "express";
+import asyncHandler from "express-async-handler";
 import {
   register,
   login,
@@ -13,9 +14,9 @@ import {
 
 const authRouter = express.Router();
 
-authRouter.post("/register", registerValidationRules, register);
-authRouter.post("/login", loginValidationRules, login);
-authRouter.post("/logout", logout);
-authRouter.get("/me", userAuth, getCurrentUser);
+authRouter.post("/register", registerValidationRules, asyncHandler(register));
+authRouter.post("/login", loginValidationRules, asyncHandler(login));
+authRouter.post("/logout", asyncHandler(logout));
+authRouter.get("/me", userAuth, asyncHandler(getCurrentUser));
 
 export default authRouter;

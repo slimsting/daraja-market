@@ -14,7 +14,8 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
-import loggerWinston from "./utils/logger.js";
+import logger from "./utils/logger.js";
+import errorHandler from "./utils/errorHandler.js";
 import CONFIG from "./config/constants.js";
 
 const app = express();
@@ -37,12 +38,16 @@ app.use(
 
 const stream = {
   write: (message) => {
-    loggerWinston.info(message.trim()); // send Morgan logs to Winston
+    logger.info(message.trim()); // send Morgan logs to Winston
   },
 };
 
-// Use Morgan with Winston
-app.use(morgan("combined", { stream }));
+// Use Morgan with console logging in development, Winston in production
+if (process.env.NODE_ENV === "production") {
+  app.use(morgan("combined", { stream }));
+} else {
+  app.use(morgan("dev")); // colorful, concise output for development
+}
 app.use(helmet()); //security
 app.use(express.json({ limit: CONFIG.REQUEST.JSON_LIMIT }));
 app.use(
@@ -69,14 +74,20 @@ app.use("/api/users", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/stats", statsRouter);
 
+// Error handling middleware
+app.use(errorHandler);
+
 const startServer = async () => {
   try {
     await connectDB();
     app.listen(PORT, () =>
-      console.log(`Server is running http://localhost:${PORT} \n`),
+      logger.info(`Server is running on http://localhost:${PORT}`),
     );
   } catch (error) {
-    console.error("Error starting server", error);
+    logger.error("Error starting server", {
+      error: error.message,
+      stack: error.stack,
+    });
     process.exit(1);
   }
 };

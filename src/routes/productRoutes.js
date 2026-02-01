@@ -1,4 +1,5 @@
 import express from "express";
+import asyncHandler from "express-async-handler";
 import {
   createProduct,
   getAllProducts,
@@ -18,17 +19,17 @@ productRouter.post(
   userAuth,
   authorize("farmer"),
   productValidationRules("create"),
-  createProduct,
+  asyncHandler(createProduct),
 );
-productRouter.get("/all", userAuth, getAllProducts);
-productRouter.get("/my-products", userAuth, getAllMyProducts);
-productRouter.get("/:itemId", userAuth, getProductByID);
+productRouter.get("/all", userAuth, asyncHandler(getAllProducts));
+productRouter.get("/my-products", userAuth, asyncHandler(getAllMyProducts));
+productRouter.get("/:productId", userAuth, asyncHandler(getProductByID));
 productRouter.put(
-  "/:itemId",
+  "/:productId",
   userAuth,
   productValidationRules("update"),
-  updateProductById,
+  asyncHandler(updateProductById),
 );
-productRouter.delete("/:itemId", userAuth, deleteProductById);
+productRouter.delete("/:productId", userAuth, asyncHandler(deleteProductById));
 
 export default productRouter;

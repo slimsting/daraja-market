@@ -1,14 +1,14 @@
 import winston from "winston";
 
 // Create Winston logger
-const loggerWinston = winston.createLogger({
+const logger = winston.createLogger({
   level: "info", // default log level
   format: winston.format.combine(
     winston.format.timestamp(),
+    winston.format.errors({ stack: true }), //
     winston.format.json(), // structured JSON logs
   ),
   transports: [
-    new winston.transports.Console(), // log to console
     new winston.transports.File({ filename: "combined.log" }), // log all levels
     new winston.transports.File({ filename: "errors.log", level: "error" }), // log only errors
   ],
@@ -16,7 +16,7 @@ const loggerWinston = winston.createLogger({
 
 // Add console transport only in development
 if (process.env.NODE_ENV !== "production") {
-  loggerWinston.add(
+  logger.add(
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(), // colorful output
@@ -26,4 +26,4 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
-export default loggerWinston;
+export default logger;
