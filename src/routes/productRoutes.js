@@ -11,6 +11,7 @@ import {
 import userAuth from "../middleware/userAuth.js";
 import { productValidationRules } from "../middleware/validators/productValidator.js";
 import authorize from "../middleware/authorize.js";
+import { validateUserAndObjectId } from "../middleware/utils/utils.js";
 
 const productRouter = express.Router();
 
@@ -23,13 +24,24 @@ productRouter.post(
 );
 productRouter.get("/all", userAuth, asyncHandler(getAllProducts));
 productRouter.get("/my-products", userAuth, asyncHandler(getAllMyProducts));
-productRouter.get("/:productId", userAuth, asyncHandler(getProductByID));
+productRouter.get(
+  "/:productId",
+  userAuth,
+  validateUserAndObjectId("productId"),
+  asyncHandler(getProductByID),
+);
 productRouter.put(
   "/:productId",
   userAuth,
+  validateUserAndObjectId("productId"),
   productValidationRules("update"),
   asyncHandler(updateProductById),
 );
-productRouter.delete("/:productId", userAuth, asyncHandler(deleteProductById));
+productRouter.delete(
+  "/:productId",
+  userAuth,
+  validateUserAndObjectId("productId"),
+  asyncHandler(deleteProductById),
+);
 
 export default productRouter;

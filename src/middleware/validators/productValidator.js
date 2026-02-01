@@ -67,6 +67,10 @@ export const productValidationRules = (mode = "create") => {
       .optional()
       .isArray()
       .withMessage("Images must be an array of strings"),
+    body("images.*")
+      .optional()
+      .isString()
+      .withMessage("Each image must be a string"),
     body("available")
       .optional()
       .isBoolean()
@@ -83,6 +87,10 @@ export const productValidationRules = (mode = "create") => {
       .optional()
       .isArray()
       .withMessage("Tags must be an array of strings"),
+    body("tags.*")
+      .optional()
+      .isString()
+      .withMessage("Each tag must be a string"),
     handleValidationErrors,
   ];
 };

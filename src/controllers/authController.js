@@ -30,7 +30,7 @@ export const register = asyncHandler(async (req, res) => {
   //if user role is admin check if they have provided the correct admin reg code else return error
   if (registeringUserData.role === "admin") {
     const adminRegCodeIsValid =
-      registeringUserData.adminCode === process.env.ADMIN_REG_CODE;
+      registeringUserData.adminRegCode === process.env.ADMIN_REG_CODE;
     if (!adminRegCodeIsValid) {
       const error = new Error("Invalid admin registration code");
       error.status = 401;

@@ -1,9 +1,8 @@
 import Product from "../models/productModel.js";
-import User from "../models/userModel.js";
-import mongoose from "mongoose";
-import asyncHandler from "express-async-handler";
-import { sanitizeDocument } from "../utils/sanitizer.js";
 import { successResponse } from "../utils/responseHandler.js";
+import asyncHandler from "express-async-handler";
+import { pickAllowedFields } from "../middleware/utils/utils.js";
+import { sanitizeDocument } from "../utils/sanitizer.js";
 
 export const createProduct = asyncHandler(async (req, res) => {
   const currentUserId = req.user?.id;
@@ -22,103 +21,43 @@ export const createProduct = asyncHandler(async (req, res) => {
 
   return successResponse(
     res,
-    sanitizeDocument(newProduct, ["__v", "createdAt", "updatedAt", "_id"]),
+    sanitizeDocument(newProduct, ["__v", "createdAt", "updatedAt"]),
     "Product created successfully",
     201,
   );
 });
 
 export const getAllProducts = asyncHandler(async (req, res) => {
-  const currentUserId = req.user?.id;
-
-  if (!currentUserId) {
-    const error = new Error("Unauthorized. Please login first");
-    error.status = 401;
-    throw error;
-  }
-
-  const { role: currentUserRole } =
-    await User.findById(currentUserId).select("role");
-  if (!currentUserRole) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
-  }
-  //
-  if (!["admin", "broker"].includes(currentUserRole)) {
-    const error = new Error("Access denied. Insufficient permissions");
-    error.status = 403;
-    throw error;
-  }
-
+  // All authenticated users can view products
   const products = await Product.find()
     .select("-__v -createdAt -updatedAt")
     .populate("farmer", "name email phone")
     .lean();
 
-  return successResponse(
-    res,
-    products.map((p) => sanitizeDocument(p, ["__v", "createdAt", "updatedAt"])),
-    "Successfully retrieved products",
-  );
+  return successResponse(res, products, "Successfully retrieved products");
 });
 
 export const getAllMyProducts = asyncHandler(async (req, res) => {
-  const currentUserId = req.user?.id;
-  if (!currentUserId) {
-    const error = new Error("Unauthorized. Please login first");
-    error.status = 401;
-    throw error;
-  }
-
-  const { role: currentUserRole } =
-    await User.findById(currentUserId).select("role");
-  if (!currentUserRole) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
-  }
-
-  if (currentUserRole !== "farmer") {
+  if (req.user.role !== "farmer") {
     const error = new Error("Access denied. Insufficient permissions");
     error.status = 403;
     throw error;
   }
 
-  const products = await Product.find({ farmer: currentUserId })
+  const products = await Product.find({ farmer: req.user.id })
     .select("-__v -createdAt -updatedAt")
     .populate("farmer", "name email phone")
     .lean();
 
   return successResponse(
     res,
-    products.map((p) => sanitizeDocument(p, ["__v", "createdAt", "updatedAt"])),
+    products,
     "Successfully retrieved farmer products",
   );
 });
 
 export const getProductByID = asyncHandler(async (req, res) => {
-  const currentUserId = req.user?.id;
-  const { productId: productId } = req.params;
-
-  if (!currentUserId) {
-    const error = new Error("Unauthorized. Please login first");
-    error.status = 401;
-    throw error;
-  }
-  // check if theproduct Id is a valid mongodb id
-  if (!mongoose.Types.ObjectId.isValid(productId)) {
-    const error = new Error("Invalid product ID");
-    error.status = 400;
-    throw error;
-  }
-
-  const currentUser = await User.findById(currentUserId).select("role");
-  if (!currentUser) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
-  }
+  const { productId } = req.params;
 
   const product = await Product.findById(productId)
     .select("-__v")
@@ -131,46 +70,12 @@ export const getProductByID = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  // Authorization check. if the current user role is farmer and the product does not belong to them deny access
-  if (
-    ["farmer", "broker"].includes(currentUser.role) &&
-    product.farmer._id.toString() !== currentUserId
-  ) {
-    const error = new Error("Access denied. You do not own this product");
-    error.status = 403;
-    throw error;
-  }
-
-  return successResponse(
-    res,
-    sanitizeDocument(product, ["__v"]),
-    "Successfully retrieved product",
-  );
+  return successResponse(res, product, "Successfully retrieved product");
 });
 
 export const updateProductById = asyncHandler(async (req, res) => {
-  const currentUserId = req.user?.id;
-  const { productId: productId } = req.params;
+  const { productId } = req.params;
   const updates = req.body;
-
-  if (!currentUserId) {
-    const error = new Error("Unauthorized. Please login first");
-    error.status = 401;
-    throw error;
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(productId)) {
-    const error = new Error("Invalid product ID");
-    error.status = 400;
-    throw error;
-  }
-
-  const currentUser = await User.findById(currentUserId).select("role");
-  if (!currentUser) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
-  }
 
   const product = await Product.findById(productId);
   if (!product) {
@@ -179,18 +84,36 @@ export const updateProductById = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  // Authorization check
-  if (
-    ["farmer", "broker"].includes(currentUser.role) &&
-    product.farmer.toString() !== currentUserId
-  ) {
+  // Authorization check: only farmer (if owner) or admin
+  if (req.user.role === "farmer" && product.farmer.toString() !== req.user.id) {
     const error = new Error("Access denied. You do not own this product");
     error.status = 403;
     throw error;
   }
+  if (req.user.role !== "farmer" && req.user.role !== "admin") {
+    const error = new Error("Access denied. Insufficient permissions");
+    error.status = 403;
+    throw error;
+  }
+
+  // Whitelist allowed fields
+  const allowedFields = [
+    "name",
+    "category",
+    "description",
+    "price",
+    "unit",
+    "quantity",
+    "images",
+    "available",
+    "harvestDate",
+    "organic",
+    "tags",
+  ];
+  const filteredUpdates = pickAllowedFields(updates, allowedFields);
 
   // Update product
-  Object.assign(product, updates);
+  Object.assign(product, filteredUpdates);
   await product.save();
 
   return successResponse(
@@ -201,27 +124,7 @@ export const updateProductById = asyncHandler(async (req, res) => {
 });
 
 export const deleteProductById = asyncHandler(async (req, res) => {
-  const currentUserId = req.user?.id;
-  const { productId: productId } = req.params;
-
-  if (!currentUserId) {
-    const error = new Error("Unauthorized. Please login first");
-    error.status = 401;
-    throw error;
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(productId)) {
-    const error = new Error("Invalid product ID");
-    error.status = 400;
-    throw error;
-  }
-
-  const currentUser = await User.findById(currentUserId).select("role");
-  if (!currentUser) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
-  }
+  const { productId } = req.params;
 
   const product = await Product.findById(productId);
   if (!product) {
@@ -231,16 +134,13 @@ export const deleteProductById = asyncHandler(async (req, res) => {
   }
 
   // Authorization checks
-  if (currentUser.role === "broker") {
+  if (req.user.role === "broker") {
     const error = new Error("Brokers are not allowed to delete products");
     error.status = 403;
     throw error;
   }
 
-  if (
-    currentUser.role === "farmer" &&
-    product.farmer.toString() !== currentUserId
-  ) {
+  if (req.user.role === "farmer" && product.farmer.toString() !== req.user.id) {
     const error = new Error(
       "Access denied. You can only delete your own products",
     );
