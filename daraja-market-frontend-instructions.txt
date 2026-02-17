@@ -1,0 +1,1325 @@
+================================================================================
+DARAJA MARKET - FRONTEND DEVELOPMENT INSTRUCTIONS
+================================================================================
+A comprehensive guide for building a Next.js e-commerce application connecting
+farmers and brokers at Kisii's Daraja Moja Market
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+Create a modern, production-ready Next.js e-commerce application for Daraja 
+Market - a platform connecting farmers and brokers in Kisii's Daraja Moja 
+market. The application should feature a green theme reflecting agriculture 
+and sustainability, with a focus on simplicity, best practices, and excellent 
+user experience.
+
+BACKEND API ROUTES REFERENCE
+================================================================================
+ROOT LEVEL:
+- GET    http://localhost:5000/api/users/farmers
+- GET    http://localhost:5000/api/users/brokers
+- GET    http://localhost:5000/api/stats/
+
+AUTH ENDPOINTS:
+- POST   http://localhost:5000/api/auth/register
+- POST   http://localhost:5000/api/auth/login
+- POST   http://localhost:5000/api/auth/logout
+- GET    http://localhost:5000/api/auth/me
+
+PRODUCT ENDPOINTS:
+- POST   http://localhost:5000/api/products
+- GET    http://localhost:5000/api/products
+- GET    http://localhost:5000/api/products/my-products
+- GET    http://localhost:5000/api/products/:id
+- PUT    http://localhost:5000/api/products/:id
+- DELETE http://localhost:5000/api/products/:id
+
+CART ENDPOINTS:
+- POST   http://localhost:5000/api/cart/
+- GET    http://localhost:5000/api/cart/
+- PUT    http://localhost:5000/api/cart/:itemId
+- DELETE http://localhost:5000/api/cart/
+- POST   http://localhost:5000/api/cart/checkout
+
+================================================================================
+TECHNICAL STACK & SETUP
+================================================================================
+
+STEP 1: Initialize Next.js Project
+--------------------------------------------------------------------------------
+npx create-next-app@latest daraja-market-frontend
+
+Configuration Options:
+✓ TypeScript: Yes
+✓ ESLint: Yes
+✓ Tailwind CSS: Yes
+✓ src/ directory: Yes
+✓ App Router: Yes
+✓ Import alias (@/*): Yes
+✓ Turbopack: No (optional, but recommended for faster development)
+
+STEP 2: Install Required Dependencies
+--------------------------------------------------------------------------------
+cd daraja-market-frontend
+
+npm install axios zustand react-hook-form zod @hookform/resolvers
+npm install lucide-react class-variance-authority clsx tailwind-merge
+npm install sonner
+npm install @tanstack/react-query
+
+STEP 3: Install Dev Dependencies
+--------------------------------------------------------------------------------
+npm install -D @types/node @types/react @types/react-dom
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+
+Create the following folder structure:
+
+src/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   ├── register/
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── (dashboard)/
+│   │   ├── farmer/
+│   │   │   ├── products/
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── new/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── [id]/
+│   │   │   │       └── edit/
+│   │   │   │           └── page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── broker/
+│   │   │   ├── cart/
+│   │   │   │   └── page.tsx
+│   │   │   ├── checkout/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   └── layout.tsx
+│   ├── products/
+│   │   ├── page.tsx
+│   │   └── [id]/
+│   │       └── page.tsx
+│   ├── farmers/
+│   │   └── page.tsx
+│   ├── brokers/
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── globals.css
+├── components/
+│   ├── ui/
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── card.tsx
+│   │   ├── dialog.tsx
+│   │   ├── dropdown.tsx
+│   │   ├── badge.tsx
+│   │   └── spinner.tsx
+│   ├── layout/
+│   │   ├── navbar.tsx
+│   │   ├── footer.tsx
+│   │   └── sidebar.tsx
+│   ├── products/
+│   │   ├── product-card.tsx
+│   │   ├── product-grid.tsx
+│   │   ├── product-form.tsx
+│   │   └── product-filters.tsx
+│   ├── cart/
+│   │   ├── cart-item.tsx
+│   │   ├── cart-summary.tsx
+│   │   └── cart-drawer.tsx
+│   └── auth/
+│       ├── login-form.tsx
+│       └── register-form.tsx
+├── lib/
+│   ├── api/
+│   │   ├── client.ts
+│   │   ├── auth.ts
+│   │   ├── products.ts
+│   │   ├── cart.ts
+│   │   └── users.ts
+│   ├── hooks/
+│   │   ├── use-auth.ts
+│   │   ├── use-cart.ts
+│   │   ├── use-products.ts
+│   │   └── use-toast.ts
+│   ├── store/
+│   │   ├── auth-store.ts
+│   │   └── cart-store.ts
+│   ├── utils/
+│   │   ├── cn.ts
+│   │   ├── validators.ts
+│   │   └── formatters.ts
+│   └── constants.ts
+└── types/
+    ├── index.ts
+    ├── auth.ts
+    ├── product.ts
+    ├── cart.ts
+    └── user.ts
+
+================================================================================
+DESIGN SYSTEM & THEME
+================================================================================
+
+STEP 4: Configure Tailwind with Green Theme
+--------------------------------------------------------------------------------
+
+Update tailwind.config.ts:
+
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  content: [
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
+        },
+        secondary: {
+          50: '#fefce8',
+          100: '#fef9c3',
+          200: '#fef08a',
+          300: '#fde047',
+          400: '#facc15',
+          500: '#eab308',
+          600: '#ca8a04',
+          700: '#a16207',
+          800: '#854d0e',
+          900: '#713f12',
+        },
+        neutral: {
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#e5e5e5',
+          300: '#d4d4d4',
+          400: '#a3a3a3',
+          500: '#737373',
+          600: '#525252',
+          700: '#404040',
+          800: '#262626',
+          900: '#171717',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        lg: '0.75rem',
+        md: '0.5rem',
+        sm: '0.25rem',
+      },
+      boxShadow: {
+        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+        'soft-lg': '0 10px 40px -10px rgba(0, 0, 0, 0.1)',
+      },
+    },
+  },
+  plugins: [],
+}
+export default config
+
+================================================================================
+CORE IMPLEMENTATION DETAILS
+================================================================================
+
+STEP 5: Create Type Definitions
+--------------------------------------------------------------------------------
+
+File: src/types/index.ts
+
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: 'farmer' | 'broker';
+  createdAt: string;
+}
+
+export interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  unit: string;
+  quantity: number;
+  images?: string[];
+  farmer: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CartItem {
+  _id: string;
+  product: Product;
+  quantity: number;
+  price: number;
+}
+
+export interface Cart {
+  items: CartItem[];
+  totalPrice: number;
+  totalItems: number;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  user: User;
+  token: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+STEP 6: Setup API Client
+--------------------------------------------------------------------------------
+
+File: src/lib/api/client.ts
+
+import axios from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+export const apiClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true,
+});
+
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+STEP 7: Create API Service Functions
+--------------------------------------------------------------------------------
+
+File: src/lib/api/auth.ts
+
+import { apiClient } from './client';
+import { AuthResponse, User } from '@/types';
+
+export const authApi = {
+  register: async (data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    role: 'farmer' | 'broker';
+  }) => {
+    const response = await apiClient.post<AuthResponse>('/auth/register', data);
+    return response.data;
+  },
+
+  login: async (credentials: { email: string; password: string }) => {
+    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
+    return response.data;
+  },
+
+  logout: async () => {
+    const response = await apiClient.post('/auth/logout');
+    return response.data;
+  },
+
+  getCurrentUser: async () => {
+    const response = await apiClient.get<{ success: boolean; user: User }>('/auth/me');
+    return response.data;
+  },
+};
+
+File: src/lib/api/products.ts
+
+import { apiClient } from './client';
+import { Product, ApiResponse } from '@/types';
+
+export const productsApi = {
+  getAll: async () => {
+    const response = await apiClient.get<ApiResponse<Product[]>>('/products');
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await apiClient.get<ApiResponse<Product>>(`/products/${id}`);
+    return response.data;
+  },
+
+  getMyProducts: async () => {
+    const response = await apiClient.get<ApiResponse<Product[]>>('/products/my-products');
+    return response.data;
+  },
+
+  create: async (productData: FormData) => {
+    const response = await apiClient.post<ApiResponse<Product>>('/products', productData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  update: async (id: string, productData: Partial<Product>) => {
+    const response = await apiClient.put<ApiResponse<Product>>(`/products/${id}`, productData);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await apiClient.delete<ApiResponse<null>>(`/products/${id}`);
+    return response.data;
+  },
+};
+
+File: src/lib/api/cart.ts
+
+import { apiClient } from './client';
+import { Cart, ApiResponse } from '@/types';
+
+export const cartApi = {
+  get: async () => {
+    const response = await apiClient.get<ApiResponse<Cart>>('/cart');
+    return response.data;
+  },
+
+  addItem: async (productId: string, quantity: number) => {
+    const response = await apiClient.post<ApiResponse<Cart>>('/cart', {
+      productId,
+      quantity,
+    });
+    return response.data;
+  },
+
+  updateItem: async (itemId: string, quantity: number) => {
+    const response = await apiClient.put<ApiResponse<Cart>>(`/cart/${itemId}`, {
+      quantity,
+    });
+    return response.data;
+  },
+
+  removeItem: async (itemId: string) => {
+    const response = await apiClient.delete<ApiResponse<Cart>>('/cart', {
+      data: { itemId },
+    });
+    return response.data;
+  },
+
+  checkout: async () => {
+    const response = await apiClient.post<ApiResponse<any>>('/cart/checkout');
+    return response.data;
+  },
+};
+
+STEP 8: Create State Management with Zustand
+--------------------------------------------------------------------------------
+
+File: src/lib/store/auth-store.ts
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { User } from '@/types';
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  setAuth: (user: User, token: string) => void;
+  clearAuth: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      setAuth: (user, token) => {
+        localStorage.setItem('token', token);
+        set({ user, token, isAuthenticated: true });
+      },
+      clearAuth: () => {
+        localStorage.removeItem('token');
+        set({ user: null, token: null, isAuthenticated: false });
+      },
+    }),
+    {
+      name: 'auth-storage',
+    }
+  )
+);
+
+STEP 9: Create Custom Hooks with React Query
+--------------------------------------------------------------------------------
+
+File: src/lib/hooks/use-products.ts
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { productsApi } from '@/lib/api/products';
+import { toast } from 'sonner';
+
+export const useProducts = () => {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: productsApi.getAll,
+  });
+};
+
+export const useProduct = (id: string) => {
+  return useQuery({
+    queryKey: ['product', id],
+    queryFn: () => productsApi.getById(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: productsApi.create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product created successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to create product');
+    },
+  });
+};
+
+================================================================================
+UI COMPONENTS
+================================================================================
+
+STEP 10: Create Reusable UI Components
+--------------------------------------------------------------------------------
+
+File: src/lib/utils/cn.ts
+
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+File: src/components/ui/button.tsx
+
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils/cn';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary-600 text-white hover:bg-primary-700',
+        secondary: 'bg-secondary-500 text-white hover:bg-secondary-600',
+        outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50',
+        ghost: 'hover:bg-primary-50 text-primary-700',
+        danger: 'bg-red-600 text-white hover:bg-red-700',
+      },
+      size: {
+        sm: 'h-9 px-3 text-sm',
+        md: 'h-10 px-4 py-2',
+        md: 'h-12 px-6 text-lg',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+
+File: src/components/ui/input.tsx
+
+import * as React from 'react';
+import { cn } from '@/lib/utils/cn';
+
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className={cn(
+          'flex h-10 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm',
+          'placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Input.displayName = 'Input';
+
+export { Input };
+
+STEP 11: Create Layout Components
+--------------------------------------------------------------------------------
+
+File: src/components/layout/navbar.tsx
+
+'use client';
+
+import Link from 'next/link';
+import { ShoppingCart, User, LogOut, Menu } from 'lucide-react';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { Button } from '@/components/ui/button';
+
+export function Navbar() {
+  const { user, isAuthenticated, clearAuth } = useAuthStore();
+
+  return (
+    <nav className="bg-white border-b border-neutral-200 sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">DM</span>
+            </div>
+            <span className="text-xl font-display font-bold text-primary-800">
+              Daraja Market
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/products" className="text-neutral-700 hover:text-primary-600">
+              Products
+            </Link>
+            <Link href="/farmers" className="text-neutral-700 hover:text-primary-600">
+              Farmers
+            </Link>
+            <Link href="/brokers" className="text-neutral-700 hover:text-primary-600">
+              Brokers
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {isAuthenticated ? (
+              <>
+                {user?.role === 'broker' && (
+                  <Link href="/broker/cart">
+                    <Button variant="ghost" size="sm">
+                      <ShoppingCart className="w-5 h-5" />
+                    </Button>
+                  </Link>
+                )}
+                <Link href={`/${user?.role}`}>
+                  <Button variant="ghost" size="sm">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={clearAuth}>
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="outline" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm">Register</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+File: src/components/layout/footer.tsx
+
+import Link from 'next/link';
+
+export function Footer() {
+  return (
+    <footer className="bg-primary-900 text-white py-12 mt-20">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-4 gap-8">
+          <div>
+            <h3 className="font-display font-bold text-xl mb-4">Daraja Market</h3>
+            <p className="text-primary-200">
+              Connecting farmers and brokers in Kisii's agricultural community
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Quick Links</h4>
+            <ul className="space-y-2">
+              <li><Link href="/products" className="text-primary-200 hover:text-white">Products</Link></li>
+              <li><Link href="/farmers" className="text-primary-200 hover:text-white">Farmers</Link></li>
+              <li><Link href="/brokers" className="text-primary-200 hover:text-white">Brokers</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Support</h4>
+            <ul className="space-y-2">
+              <li><Link href="/about" className="text-primary-200 hover:text-white">About Us</Link></li>
+              <li><Link href="/contact" className="text-primary-200 hover:text-white">Contact</Link></li>
+              <li><Link href="/help" className="text-primary-200 hover:text-white">Help Center</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Contact</h4>
+            <p className="text-primary-200">Daraja Moja Market</p>
+            <p className="text-primary-200">Kisii, Kenya</p>
+            <p className="text-primary-200">info@darajamarket.co.ke</p>
+          </div>
+        </div>
+        
+        <div className="border-t border-primary-800 mt-8 pt-8 text-center text-primary-200">
+          <p>&copy; 2024 Daraja Market. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+================================================================================
+KEY PAGES IMPLEMENTATION
+================================================================================
+
+STEP 12: Create Home Page
+--------------------------------------------------------------------------------
+
+File: src/app/page.tsx
+
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Leaf, Users, ShoppingBag } from 'lucide-react';
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen">
+      <section className="bg-gradient-to-br from-primary-50 to-secondary-50 py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-5xl font-display font-bold text-primary-900 mb-6">
+              Connect Farmers & Brokers at Daraja Moja Market
+            </h1>
+            <p className="text-xl text-neutral-700 mb-8">
+              The digital marketplace bringing together Kisii's agricultural community
+            </p>
+            <div className="flex gap-4 justify-center">
+              <Link href="/products">
+                <Button size="lg">
+                  Browse Products <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="lg" variant="outline">
+                  Join Now
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<Leaf className="w-12 h-12 text-primary-600" />}
+              title="Fresh Products"
+              description="Direct from local farmers to your business"
+            />
+            <FeatureCard
+              icon={<Users className="w-12 h-12 text-primary-600" />}
+              title="Trusted Network"
+              description="Connect with verified farmers and brokers"
+            />
+            <FeatureCard
+              icon={<ShoppingBag className="w-12 h-12 text-primary-600" />}
+              title="Easy Trading"
+              description="Simple ordering and checkout process"
+            />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: any) {
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-soft text-center">
+      <div className="flex justify-center mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-neutral-600">{description}</p>
+    </div>
+  );
+}
+
+STEP 13: Create Root Layout
+--------------------------------------------------------------------------------
+
+File: src/app/layout.tsx
+
+import type { Metadata } from 'next';
+import { Inter, Poppins } from 'next/font/google';
+import './globals.css';
+import { Navbar } from '@/components/layout/navbar';
+import { Footer } from '@/components/layout/footer';
+import { Toaster } from 'sonner';
+import { Providers } from './providers';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const poppins = Poppins({ 
+  weight: ['400', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
+});
+
+export const metadata: Metadata = {
+  title: 'Daraja Market - Connecting Farmers & Brokers',
+  description: 'Digital marketplace for Kisii agricultural community',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={`${inter.variable} ${poppins.variable} font-sans`}>
+        <Providers>
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <Toaster position="top-right" />
+        </Providers>
+      </body>
+    </html>
+  );
+}
+
+File: src/app/providers.tsx
+
+'use client';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }));
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+
+STEP 14: Create Authentication Pages
+--------------------------------------------------------------------------------
+
+File: src/app/(auth)/login/page.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { authApi } from '@/lib/api/auth';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { toast } from 'sonner';
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await authApi.login(formData);
+      setAuth(response.user, response.token);
+      toast.success('Login successful!');
+      
+      if (response.user.role === 'farmer') {
+        router.push('/farmer/products');
+      } else {
+        router.push('/products');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
+      <div className="bg-white p-8 rounded-lg shadow-soft-lg w-full max-w-md">
+        <h1 className="text-3xl font-display font-bold text-primary-900 mb-6 text-center">
+          Welcome Back
+        </h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Email
+            </label>
+            <Input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="your@email.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Password
+            </label>
+            <Input
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </Button>
+        </form>
+        
+        <p className="text-center mt-6 text-neutral-600">
+          Don't have an account?{' '}
+          <Link href="/register" className="text-primary-600 hover:text-primary-700 font-medium">
+            Register here
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+File: src/app/(auth)/register/page.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { authApi } from '@/lib/api/auth';
+import { useAuthStore } from '@/lib/store/auth-store';
+import { toast } from 'sonner';
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const { setAuth } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    role: 'broker' as 'farmer' | 'broker',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      const { confirmPassword, ...registerData } = formData;
+      const response = await authApi.register(registerData);
+      setAuth(response.user, response.token);
+      toast.success('Registration successful!');
+      
+      if (response.user.role === 'farmer') {
+        router.push('/farmer/products');
+      } else {
+        router.push('/products');
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 py-12">
+      <div className="bg-white p-8 rounded-lg shadow-soft-lg w-full max-w-md">
+        <h1 className="text-3xl font-display font-bold text-primary-900 mb-6 text-center">
+          Join Daraja Market
+        </h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Full Name
+            </label>
+            <Input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="John Doe"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Email
+            </label>
+            <Input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="your@email.com"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Phone Number
+            </label>
+            <Input
+              type="tel"
+              required
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+254 700 000 000"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              I am a
+            </label>
+            <select
+              className="flex h-10 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'farmer' | 'broker' })}
+            >
+              <option value="broker">Broker</option>
+              <option value="farmer">Farmer</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Password
+            </label>
+            <Input
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Confirm Password
+            </label>
+            <Input
+              type="password"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Creating account...' : 'Create Account'}
+          </Button>
+        </form>
+        
+        <p className="text-center mt-6 text-neutral-600">
+          Already have an account?{' '}
+          <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+            Login here
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+================================================================================
+ENVIRONMENT & CONFIGURATION
+================================================================================
+
+STEP 15: Setup Environment Variables
+--------------------------------------------------------------------------------
+
+Create .env.local file in root:
+
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_APP_NAME=Daraja Market
+
+STEP 16: Configure Next.js
+--------------------------------------------------------------------------------
+
+File: next.config.js
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['localhost'],
+  },
+};
+
+module.exports = nextConfig;
+
+STEP 17: Update Global Styles
+--------------------------------------------------------------------------------
+
+File: src/app/globals.css
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+================================================================================
+ADDITIONAL REQUIREMENTS
+================================================================================
+
+AUTHENTICATION FLOW
+--------------------------------------------------------------------------------
+- Implement protected routes using middleware
+- Add role-based access control (farmer vs broker)
+- Handle token refresh and session management
+- Create middleware.ts for route protection
+
+PRODUCT MANAGEMENT (FARMERS)
+--------------------------------------------------------------------------------
+- Product CRUD operations with forms
+- Image upload functionality with preview
+- Inventory tracking and status updates
+- Product listing with filters and search
+
+SHOPPING EXPERIENCE (BROKERS)
+--------------------------------------------------------------------------------
+- Product browsing with categories and filters
+- Add to cart functionality
+- Cart management (update quantities, remove items)
+- Checkout process with order summary
+
+RESPONSIVE DESIGN
+--------------------------------------------------------------------------------
+- Mobile-first approach with Tailwind
+- Touch-friendly interfaces
+- Hamburger menu for mobile navigation
+- Optimized for tablets and desktops
+
+PERFORMANCE OPTIMIZATION
+--------------------------------------------------------------------------------
+- Image optimization with Next.js Image component
+- Code splitting and lazy loading
+- React Query caching strategy
+- Optimistic updates for better UX
+
+TESTING & QUALITY
+--------------------------------------------------------------------------------
+- Set up ESLint and Prettier
+- Add basic component tests with Jest/React Testing Library
+- Implement error boundaries for better error handling
+- Add loading states and skeletons
+
+================================================================================
+DEVELOPMENT WORKFLOW
+================================================================================
+
+RECOMMENDED ORDER OF IMPLEMENTATION:
+--------------------------------------------------------------------------------
+1. Start with authentication
+   - Build login/register flows first
+   - Test auth state management
+   - Implement protected routes
+
+2. Build core UI components
+   - Create the design system
+   - Build reusable components
+   - Test component variants
+
+3. Implement product features
+   - CRUD operations for farmers
+   - Product listing and details
+   - Image upload and management
+
+4. Add cart functionality
+   - Shopping experience for brokers
+   - Cart state management
+   - Checkout flow
+
+5. Polish and optimize
+   - Performance optimizations
+   - Accessibility improvements
+   - UX enhancements
+   - Error handling
+
+RUNNING THE PROJECT:
+--------------------------------------------------------------------------------
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+
+================================================================================
+ADDITIONAL FEATURES TO CONSIDER
+================================================================================
+
+PHASE 2 ENHANCEMENTS:
+--------------------------------------------------------------------------------
+- Real-time notifications with WebSockets
+- Order tracking and history
+- User profiles and ratings
+- Advanced search with filters
+- Analytics dashboard
+- Payment integration (M-Pesa)
+- Multi-language support (English/Swahili)
+- PWA capabilities for offline access
+
+BEST PRACTICES:
+--------------------------------------------------------------------------------
+- Use TypeScript for type safety
+- Implement proper error boundaries
+- Add loading and empty states
+- Use semantic HTML
+- Follow accessibility guidelines (WCAG)
+- Optimize images and assets
+- Implement SEO best practices
+- Add analytics tracking
+- Monitor performance metrics
+
+================================================================================
+END OF INSTRUCTIONS
+================================================================================
+
+This comprehensive guide provides everything needed to build a production-ready
+Next.js frontend for Daraja Market. Follow the steps sequentially for best
+results. Good luck with your development!
+
+For questions or issues, refer to:
+- Next.js Documentation: https://nextjs.org/docs
+- Tailwind CSS: https://tailwindcss.com/docs
+- React Query: https://tanstack.com/query/latest
+- Zustand: https://zustand-demo.pmnd.rs

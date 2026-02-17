@@ -22,7 +22,7 @@ productRouter.post(
   productValidationRules("create"),
   asyncHandler(createProduct),
 );
-productRouter.get("/all", userAuth, asyncHandler(getAllProducts));
+productRouter.get("/", asyncHandler(getAllProducts));
 productRouter.get("/my-products", userAuth, asyncHandler(getAllMyProducts));
 productRouter.get(
   "/:productId",
