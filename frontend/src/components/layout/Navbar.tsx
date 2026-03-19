@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,22 @@ import { ShoppingCart, User, LogOut, Package } from "lucide-react";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  console.log("Navbar auth state:", { user, isAuthenticated, isLoading });
+  console.log("user###", user);
+  console.log("user role###", user?.role);
+
+  // track whether the window has been scrolled down at all
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener("scroll", handleScroll);
+    // run once in case the page loads already scrolled
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const getInitials = (name: string) => {
     return name
@@ -27,13 +44,15 @@ export function Navbar() {
   };
 
   return (
-    <nav className="border-b bg-white sticky top-0 z-50 shadow-sm">
+    <nav
+      className={`${isScrolled ? " opacity-90 backdrop-blur-xl bg-white" : "bg-white"} sticky top-0 z-50 shadow-sm transition-colors duration-300`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-2xl">🌾</span>
-            <span className="text-xl font-bold text-primary">
+            <span className="text-2xl font-bold text-primary">
               Daraja Market
             </span>
           </Link>
@@ -42,20 +61,20 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+              className=" text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
             >
               Home
             </Link>
             <Link
               href="/products"
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+              className="text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
             >
               Products
             </Link>
             {isAuthenticated && user?.role === "farmer" && (
               <Link
                 href="/dashboard"
-                className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+                className="text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
               >
                 Dashboard
               </Link>
@@ -75,47 +94,52 @@ export function Navbar() {
             )}
 
             {/* Auth Section */}
+
             {isLoading ? (
               <div className="h-10 w-10 rounded-full bg-slate-200 animate-pulse" />
             ) : isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full"
+                    variant="default"
+                    className="relative h-12 w-12 rounded-full bg-green-500 font-bold hover:bg-green-600 cursor-pointer "
                   >
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary text-white">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary text-white text-xl">
                         {getInitials(user.name)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuContent
+                  className="w-56 bg-white border-none p-4"
+                  align="end"
+                  forceMount
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
+                      <p className="text-lg font-medium leading-none">
                         {user.name}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user.email}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground capitalize">
-                        {user.role}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {user.role === "farmer" && (
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer">
+                      <Link
+                        href="/dashboard"
+                        className="cursor-pointer text-green-500"
+                      >
                         <Package className="mr-2 h-4 w-4" />
                         My Products
                       </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
+                    <Link
+                      href="/profile"
+                      className="cursor-pointer text-green-500"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>
@@ -133,10 +157,20 @@ export function Navbar() {
             ) : (
               <div className="flex items-center space-x-2">
                 <Button variant="ghost" asChild>
-                  <Link href="/login">Login</Link>
+                  <Link
+                    href="/login"
+                    className=" text-xl font-medium text-slate-600 hover:text-primary transition-colors"
+                  >
+                    Login
+                  </Link>
                 </Button>
-                <Button asChild>
-                  <Link href="/register">Register</Link>
+                <Button asChild className="bg-green-500 hover:bg-green-600">
+                  <Link
+                    href="/register"
+                    className="text-xl font-medium text-white hover:text-primary transition-colors"
+                  >
+                    Register
+                  </Link>
                 </Button>
               </div>
             )}

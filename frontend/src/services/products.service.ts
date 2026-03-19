@@ -1,137 +1,219 @@
 // src/services/products.service.ts
 import apiClient from "@/lib/api-client";
-import { Product, productSchema, productsResponseSchema } from "@/types";
-import { z } from "zod";
+import { productsLogger, logZodError } from "@/lib/loggers";
+import { Product, productSchema } from "@/types";
+import { z, ZodError } from "zod";
+
+const isFileLike = (value: unknown): value is File =>
+  !!value &&
+  typeof value === "object" &&
+  "name" in (value as any) &&
+  "size" in (value as any);
+
+const buildFormData = (data: Partial<Product>) => {
+  const form = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    // Handle arrays (tags, images, etc.)
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        // File objects should be appended as files, strings as regular fields
+        if (isFileLike(item)) {
+          form.append(key, item);
+        } else {
+          form.append(key, String(item));
+        }
+      });
+      return;
+    }
+
+    // Primitive values
+    if (value !== undefined && value !== null) {
+      form.append(key, String(value));
+    }
+  });
+
+  return form;
+};
 
 export const productsService = {
   // Get all products
   async getAll(): Promise<Product[]> {
     try {
       const response = await apiClient.get("/products");
-
-      console.log("[Products Service] Raw API response:", response.data);
-
       const data = response.data;
 
-      // Try different response formats
-      let products: unknown[] | null = null;
+      productsLogger.debug(
+        {
+          structure: Object.keys(data),
+        },
+        "Parsing products response",
+      );
 
-      // Format 1: { products: [...] }
-      if (data?.products && Array.isArray(data.products)) {
-        console.log("[Products Service] Using format 1: data.products");
-        products = data.products;
-      }
-      // Format 2: { data: { products: [...] } }
-      else if (data?.data?.products && Array.isArray(data.data.products)) {
-        console.log("[Products Service] Using format 2: data.data.products");
-        products = data.data.products;
-      }
-      // Format 3: Direct array [...]
-      else if (Array.isArray(data)) {
-        console.log("[Products Service] Using format 3: direct array");
-        products = data;
-      }
-      // Format 4: { data: [...] }
-      else if (data?.data && Array.isArray(data.data)) {
-        console.log("[Products Service] Using format 4: data.data");
-        products = data.data;
-      }
+      let productsArray: unknown[] = [];
 
-      if (!products || products.length === 0) {
-        console.warn("[Products Service] No products array found or is empty");
-        console.warn("[Products Service] Response structure:", {
-          hasProducts: !!data?.products,
-          hasData: !!data?.data,
-          isArray: Array.isArray(data),
-          dataIsArray: data?.data ? Array.isArray(data.data) : "N/A",
-          keys: Object.keys(data || {}),
-        });
-        return [];
-      }
-
-      try {
-        // Validate products with Zod
-        const validatedProducts = z.array(productSchema).parse(products);
-        console.log(
-          "[Products Service] Successfully validated products:",
-          validatedProducts.length,
+      if (data.data && Array.isArray(data.data)) {
+        productsArray = data.data;
+        productsLogger.debug("Found products in data.data");
+      } else if (data.products && Array.isArray(data.products)) {
+        productsArray = data.products;
+        productsLogger.debug("Found products in data.products");
+      } else if (Array.isArray(data)) {
+        productsArray = data;
+        productsLogger.debug("Data is direct array");
+      } else {
+        productsLogger.error(
+          { keys: Object.keys(data) },
+          "Unexpected response structure",
         );
-        return validatedProducts;
-      } catch (validationError) {
-        console.warn(
-          "[Products Service] Zod validation warning, returning unvalidated products",
-        );
-        if (validationError instanceof z.ZodError) {
-          console.warn(
-            "[Products Service] Validation errors:",
-            validationError.issues.slice(0, 3),
-          );
-          // Log first invalid product to debug
-          if (Array.isArray(products) && products.length > 0) {
-            console.warn(
-              "[Products Service] First product:",
-              JSON.stringify(products[0], null, 2),
-            );
-          }
-        }
-        // Return products without validation - they should still be usable
-        return products as Product[];
+        throw new Error("Unexpected API response format");
       }
+
+      productsLogger.debug(
+        { count: productsArray.length, sample: productsArray[0] },
+        "Validating products",
+      );
+
+      const parsed = z.array(productSchema).safeParse(productsArray);
+
+      if (!parsed.success) {
+        logZodError(productsLogger, "getAll", parsed.error, productsArray[0]);
+        throw new Error(
+          `Product validation failed: ${parsed.error.issues[0]?.message}`,
+        );
+      }
+
+      productsLogger.info(
+        { count: parsed.data.length },
+        "Products loaded successfully",
+      );
+      return parsed.data;
     } catch (error) {
-      console.error("[Products Service] Error fetching products:", error);
+      if (error instanceof ZodError) {
+        logZodError(productsLogger, "getAll", error);
+      } else {
+        productsLogger.error({ error }, "Failed to fetch products");
+      }
       throw error;
     }
   },
 
   // Get product by ID
   async getById(id: string): Promise<Product> {
-    const response = await apiClient.get(`/products/${id}`);
+    try {
+      const response = await apiClient.get(`/products/${id}`);
+      const productData =
+        response.data.product || response.data.data || response.data;
 
-    console.log("[Products Service] Raw product response:", response.data);
+      const parsed = productSchema.safeParse(productData);
 
-    // Try: { product: {...} }
-    if (response.data.product) {
-      return productSchema.parse(response.data.product);
+      if (!parsed.success) {
+        logZodError(productsLogger, "getById", parsed.error, productData);
+        throw new Error("Product validation failed");
+      }
+
+      return parsed.data;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        logZodError(productsLogger, "getById", error);
+      } else {
+        productsLogger.error({ error, id }, "Failed to fetch product");
+      }
+      throw error;
     }
-
-    // Try: { data: {...} }
-    if (response.data.data) {
-      return productSchema.parse(response.data.data);
-    }
-
-    // Try: direct object {...}
-    return productSchema.parse(response.data);
   },
 
-  // Get my products (for farmers)
+  // Get my products
   async getMyProducts(): Promise<Product[]> {
-    const response = await apiClient.get("/products/my-products");
+    try {
+      const response = await apiClient.get("/products/my-products");
+      const productsArray =
+        response.data.products || response.data.data || response.data;
 
-    if (response.data.products) {
-      return z.array(productSchema).parse(response.data.products);
+      const parsed = z.array(productSchema).safeParse(productsArray);
+
+      if (!parsed.success) {
+        logZodError(
+          productsLogger,
+          "getMyProducts",
+          parsed.error,
+          productsArray[0],
+        );
+        throw new Error("Products validation failed");
+      }
+
+      return parsed.data;
+    } catch (error) {
+      productsLogger.error({ error }, "Failed to fetch my products");
+      throw error;
     }
-
-    if (response.data.data && Array.isArray(response.data.data)) {
-      return z.array(productSchema).parse(response.data.data);
-    }
-
-    return z.array(productSchema).parse(response.data);
   },
 
   // Create product
   async create(data: Partial<Product>): Promise<Product> {
-    const response = await apiClient.post("/products", data);
-    return productSchema.parse(response.data.product || response.data);
+    try {
+      const hasFileUpload =
+        Array.isArray(data.images) &&
+        data.images.some((img) => isFileLike(img));
+
+      const payload = hasFileUpload ? buildFormData(data) : data;
+
+      const response = await apiClient.post("/products", payload);
+      const parsed = productSchema.safeParse(
+        response.data.product || response.data,
+      );
+
+      if (!parsed.success) {
+        logZodError(productsLogger, "create", parsed.error, response.data);
+        throw new Error("Product validation failed");
+      }
+
+      productsLogger.info(
+        { id: parsed.data._id },
+        "Product created successfully",
+      );
+      return parsed.data;
+    } catch (error) {
+      productsLogger.error({ error }, "Failed to create product");
+      throw error;
+    }
   },
 
   // Update product
   async update(id: string, data: Partial<Product>): Promise<Product> {
-    const response = await apiClient.put(`/products/${id}`, data);
-    return productSchema.parse(response.data.product || response.data);
+    try {
+      const hasFileUpload =
+        Array.isArray(data.images) &&
+        data.images.some((img) => isFileLike(img));
+
+      const payload = hasFileUpload ? buildFormData(data) : data;
+
+      const response = await apiClient.put(`/products/${id}`, payload);
+      const parsed = productSchema.safeParse(
+        response.data.product || response.data,
+      );
+
+      if (!parsed.success) {
+        logZodError(productsLogger, "update", parsed.error, response.data);
+        throw new Error("Product validation failed");
+      }
+
+      productsLogger.info({ id }, "Product updated successfully");
+      return parsed.data;
+    } catch (error) {
+      productsLogger.error({ error, id }, "Failed to update product");
+      throw error;
+    }
   },
 
   // Delete product
   async delete(id: string): Promise<void> {
-    await apiClient.delete(`/products/${id}`);
+    try {
+      await apiClient.delete(`/products/${id}`);
+      productsLogger.info({ id }, "Product deleted successfully");
+    } catch (error) {
+      productsLogger.error({ error, id }, "Failed to delete product");
+      throw error;
+    }
   },
 };

@@ -1,5 +1,5 @@
-// src/services/auth.service.ts
 import apiClient from "@/lib/api-client";
+import { authLogger, logZodError } from "@/lib/loggers";
 import {
   LoginCredentials,
   RegisterData,
@@ -7,40 +7,110 @@ import {
   authResponseSchema,
   userSchema,
 } from "@/types";
+import { ZodError } from "zod";
 
 export const authService = {
   // Login
   async login(credentials: LoginCredentials): Promise<User> {
-    const response = await apiClient.post("/auth/login", credentials);
-    const validated = authResponseSchema.parse(response.data);
+    try {
+      const response = await apiClient.post("/auth/login", credentials);
+      const validated = authResponseSchema.safeParse(response.data);
 
-    if (!validated.user) {
-      throw new Error("No user data in response");
+      if (!validated.success) {
+        logZodError(authLogger, "login", validated.error, response.data);
+        throw new Error("Invalid login response");
+      }
+
+      if (!validated.data.data) {
+        authLogger.error(
+          { response: response.data },
+          "No user in login response",
+        );
+        throw new Error("No user data in response");
+      }
+
+      authLogger.info(
+        { email: credentials.email },
+        "User logged in successfully",
+      );
+      return validated.data.data;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        logZodError(authLogger, "login", error);
+      } else {
+        authLogger.error({ error }, "Login failed");
+      }
+      throw error;
     }
-
-    return validated.user;
   },
 
   // Register
   async register(data: RegisterData): Promise<User> {
-    const response = await apiClient.post("/auth/register", data);
-    const validated = authResponseSchema.parse(response.data);
+    try {
+      const response = await apiClient.post("/auth/register", data);
+      const validated = authResponseSchema.safeParse(response.data);
 
-    if (!validated.user) {
-      throw new Error("No user data in response");
+      console.log("Register response:", response.data); // Debug log
+
+      if (!validated.success) {
+        logZodError(authLogger, "register", validated.error, response.data);
+        throw new Error("Invalid register response");
+      }
+
+      if (!validated.data.data) {
+        authLogger.error(
+          { response: response.data },
+          "No user in register response",
+        );
+        throw new Error("No user data in response");
+      }
+
+      authLogger.info({ email: data.email }, "User registered successfully");
+      return validated.data.data;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        logZodError(authLogger, "register", error);
+      } else {
+        authLogger.error({ error }, "Registration failed");
+      }
+      throw error;
     }
-
-    return validated.user;
   },
 
   // Get current user
   async getCurrentUser(): Promise<User> {
-    const response = await apiClient.get("/auth/me");
-    return userSchema.parse(response.data.user || response.data);
+    try {
+      const response = await apiClient.get("/auth/me");
+      const userData =
+        response.data.user || response.data.data || response.data;
+
+      const parsed = userSchema.safeParse(userData);
+
+      if (!parsed.success) {
+        logZodError(authLogger, "getCurrentUser", parsed.error, userData);
+        throw new Error("User validation failed");
+      }
+
+      authLogger.debug({ id: parsed.data._id }, "Current user fetched");
+      return parsed.data;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        logZodError(authLogger, "getCurrentUser", error);
+      } else {
+        authLogger.debug({ error }, "Failed to get current user");
+      }
+      throw error;
+    }
   },
 
   // Logout
   async logout(): Promise<void> {
-    await apiClient.post("/auth/logout");
+    try {
+      await apiClient.post("/auth/logout");
+      authLogger.info("User logged out successfully");
+    } catch (error) {
+      authLogger.error({ error }, "Logout failed");
+      throw error;
+    }
   },
 };

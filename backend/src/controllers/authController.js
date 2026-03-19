@@ -78,6 +78,8 @@ export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   //check if user is in db
   const userExists = await User.findOne({ email });
+
+  console.log("User found in database:", userExists); // Debug log
   //return error if not
   if (!userExists) {
     const error = new Error("wrong username or password");
@@ -103,10 +105,11 @@ export const login = asyncHandler(async (req, res) => {
 
   setCookie(res, token);
   //return success
-  const { name, userEmail, role, phone, location } = userExists;
+
+  const { name, role, phone, location } = userExists;
   return successResponse(
     res,
-    { name, userEmail, role, phone, location },
+    { name, email, role, phone, location },
     "Logged in successfully",
     200,
   );

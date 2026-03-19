@@ -20,5 +20,11 @@ export type ApiError = z.infer<typeof schemas.apiErrorSchema>;
 export type ProductsResponse = z.infer<typeof schemas.productsResponseSchema>;
 export type ProductResponse = z.infer<typeof schemas.productResponseSchema>;
 
+// category sample returned from backend
+export type CategorySample = {
+  category: string;
+  samples: string[];
+};
+
 // Export all schemas
 export * from "./schemas";

@@ -4,15 +4,24 @@ import { z } from "zod";
 // ==================== USER SCHEMAS ====================
 export const userRoleSchema = z.enum(["farmer", "broker", "admin"]);
 
-export const userSchema = z.object({
-  _id: z.string(),
-  name: z.string(),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  role: userRoleSchema,
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-});
+export const userSchema = z
+  .object({
+    _id: z.string().optional(),
+    name: z.string(),
+    location: z
+      .object({
+        county: z.string().optional(),
+        subCounty: z.string().optional(),
+        ward: z.string().optional(),
+      })
+      .optional(),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    role: userRoleSchema.optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough(); // Allow extra fields
 
 // ==================== PRODUCT SCHEMAS ====================
 export const productCategorySchema = z.enum([
@@ -25,30 +34,35 @@ export const productCategorySchema = z.enum([
 
 export const productUnitSchema = z.enum(["kg", "piece", "bag", "crate"]);
 
-export const productSchema = z.object({
-  _id: z.string().or(z.any()), // ObjectId might come as object, convert to string
-  farmer: z
-    .union([
-      z.string(), // ObjectId as string
-      userSchema, // Populated user object
-    ])
-    .optional(),
-  name: z.string(),
-  category: productCategorySchema.optional(),
-  description: z.string().optional(),
-  price: z.number().positive(),
-  unit: productUnitSchema.optional(),
-  quantity: z.number().nonnegative(),
-  images: z.array(z.string()).optional().default([]),
-  available: z.boolean().optional().default(true),
-  harvestDate: z.string().optional(),
-  organic: z.boolean().optional().default(false),
-  tags: z.array(z.string()).optional().default([]),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-  __v: z.number().optional(),
-});
-// .passthrough(); // Allow extra fields that might come from backend
+export const productSchema = z
+  .object({
+    _id: z.string().or(z.any()).transform(String), // ObjectId might come as object, convert to string
+    farmer: z
+      .union([
+        z.string(), // ObjectId as string
+        userSchema, // Populated user object
+      ])
+      .optional(),
+    name: z.string(),
+    category: productCategorySchema.optional(),
+    description: z.string().optional(),
+    price: z.number().min(0), // Allow 0, not just positive
+    unit: productUnitSchema.optional(),
+    quantity: z.number().min(0),
+    images: z.array(z.string()).optional().default([]),
+    available: z.boolean().optional().default(true),
+    harvestDate: z
+      .string()
+      .or(z.date())
+      .optional()
+      .transform((val) => (val ? String(val) : undefined)), // Handle Date objects
+    organic: z.boolean().optional().default(false),
+    tags: z.array(z.string()).optional().default([]),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+    __v: z.number().optional(),
+  })
+  .passthrough(); // Allow extra fields that might come from backend
 
 // ==================== CART SCHEMAS ====================
 export const cartItemSchema = z.object({
@@ -84,7 +98,13 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    ),
   role: userRoleSchema,
 });
 
@@ -98,8 +118,7 @@ export const apiErrorSchema = z.object({
 export const authResponseSchema = z.object({
   success: z.boolean().optional(),
   message: z.string().optional(),
-  user: userSchema.optional(),
-  token: z.string().optional(),
+  data: userSchema.optional(),
 });
 
 export const productsResponseSchema = z.object({

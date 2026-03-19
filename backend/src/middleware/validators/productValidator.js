@@ -83,10 +83,7 @@ export const productValidationRules = (mode = "create") => {
       .optional()
       .isBoolean()
       .withMessage("Organic must be a boolean"),
-    body("tags")
-      .optional()
-      .isArray()
-      .withMessage("Tags must be an array of strings"),
+    body("tags").optional().isString().withMessage("Tags must be a string"),
     body("tags.*")
       .optional()
       .isString()

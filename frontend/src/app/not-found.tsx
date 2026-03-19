@@ -18,8 +18,8 @@ export default function NotFound() {
           Page Not Found
         </h2>
         <p className="text-lg text-slate-600 mb-8 max-w-md mx-auto">
-          Oops! The page you{`$apos`}re looking for doesn{`$apos`}t exist. It
-          might have been moved or deleted.
+          Oops! The page you&apos;re looking for doesn&apos;t exist. It might have been
+          moved or deleted.
         </p>
 
         {/* Actions */}
