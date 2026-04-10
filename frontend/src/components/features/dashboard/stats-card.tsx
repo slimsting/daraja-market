@@ -21,9 +21,9 @@ export function StatsCard({
   trend,
 }: StatsCardProps) {
   return (
-    <Card className=" bg-green-200">
+    <Card className=" bg-green-200 border-none">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">
+        <CardTitle className="text-sm font-bold text-slate-600">
           {title}
         </CardTitle>
         <Icon className="h-4 w-4 text-slate-600" />

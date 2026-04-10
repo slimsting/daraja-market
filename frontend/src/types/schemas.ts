@@ -30,13 +30,14 @@ export const productCategorySchema = z.enum([
   "grains",
   "dairy",
   "poultry",
+  "other",
 ]);
 
 export const productUnitSchema = z.enum(["kg", "piece", "bag", "crate"]);
 
 export const productSchema = z
   .object({
-    _id: z.string().or(z.any()).transform(String), // ObjectId might come as object, convert to string
+    _id: z.string().or(z.any()).transform(String).optional(), // ObjectId might come as object, convert to string
     farmer: z
       .union([
         z.string(), // ObjectId as string
@@ -46,10 +47,13 @@ export const productSchema = z
     name: z.string(),
     category: productCategorySchema.optional(),
     description: z.string().optional(),
-    price: z.number().min(0), // Allow 0, not just positive
+    price: z.coerce.number().min(0), // Coerce strings to numbers from FormData
     unit: productUnitSchema.optional(),
-    quantity: z.number().min(0),
-    images: z.array(z.string()).optional().default([]),
+    quantity: z.coerce.number().min(0), // Coerce strings to numbers from FormData
+    images: z
+      .union([z.array(z.string()), z.array(z.instanceof(File))])
+      .optional()
+      .default([]),
     available: z.boolean().optional().default(true),
     harvestDate: z
       .string()
@@ -58,9 +62,6 @@ export const productSchema = z
       .transform((val) => (val ? String(val) : undefined)), // Handle Date objects
     organic: z.boolean().optional().default(false),
     tags: z.array(z.string()).optional().default([]),
-    createdAt: z.string().optional(),
-    updatedAt: z.string().optional(),
-    __v: z.number().optional(),
   })
   .passthrough(); // Allow extra fields that might come from backend
 

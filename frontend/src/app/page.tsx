@@ -58,11 +58,11 @@ export default function HomePage() {
       <section className=" bg-cover bg-center bg-no-repeat bg-[url(https://images.unsplash.com/photo-1518843875459-f738682238a6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFybSUyMHByb2R1Y2V8ZW58MHwwfDB8fHwy)] bg-linear-to-r from-green-600 to-green-700 text-white py-20">
         <div className="container mx-auto px-4  text-center">
           <h1 className="text-5xl font-bold mb-4">
-            Direct Access to Kisii's Finest Harvest
+            Direct Access to Kisii&apos;s Finest Harvest
           </h1>
           <p className="text-xl text-green-50 max-w-2xl mx-auto">
-            Connecting Daraja Mbili’s trusted farmers with brokers nationwide.{" "}
-            <br />
+            Connecting Daraja Mbili&apos;s trusted farmers with brokers
+            nationwide. <br />
             <span className=" text-green-500 bg-black bg-opacity-20 px-2">
               Real-time prices, verified quality.
             </span>
@@ -91,7 +91,7 @@ export default function HomePage() {
       </section>
 
       {/* Browse by Category / Products Layout */}
-      <div className="container mx-auto px-4 py-12 lg:flex lg:space-x-8">
+      <div className="container mx-auto px-12 py-12 lg:flex lg:space-x-8">
         {/* sidebar */}
         <aside className="lg:w-1/6 md:border-r md:border-green-500">
           {!categoriesLoading && categories && categories.length > 0 && (

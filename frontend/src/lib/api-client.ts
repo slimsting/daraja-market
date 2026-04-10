@@ -102,7 +102,7 @@ apiClient.interceptors.response.use(
       case 401:
         apiLogger.warn({ method, url }, "Unauthorized - user needs to login");
         return Promise.reject(
-          new ApiError(401, "Unauthorized - please login to continue"),
+          new ApiError(401, "Unauthorized - invalid credentials"),
         );
 
       case 403:

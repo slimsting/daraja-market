@@ -19,13 +19,13 @@ export const productValidationRules = (mode = "create") => {
     isCreate
       ? body("category")
           .notEmpty()
-          .isIn(["vegetables", "fruits", "grains", "dairy", "poultry"])
+          .isIn(["vegetables", "fruits", "grains", "dairy", "poultry", "other"])
           .withMessage("Invalid category")
       : body("category")
           .optional()
-          .isIn(["vegetables", "fruits", "grains", "dairy", "poultry"])
+          .isIn(["vegetables", "fruits", "grains", "dairy", "poultry", "other"])
           .withMessage(
-            "Invalid category, category can only be one among vegetables, fruits, grains, dairy, and poultry",
+            "Invalid category, category can only be one among vegetables, fruits, grains, dairy, poultry, and other",
           ),
 
     body("description")
@@ -83,7 +83,10 @@ export const productValidationRules = (mode = "create") => {
       .optional()
       .isBoolean()
       .withMessage("Organic must be a boolean"),
-    body("tags").optional().isString().withMessage("Tags must be a string"),
+    body("tags")
+      .optional()
+      .isArray()
+      .withMessage("Tags must be an array of strings"),
     body("tags.*")
       .optional()
       .isString()

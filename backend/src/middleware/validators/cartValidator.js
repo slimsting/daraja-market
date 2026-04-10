@@ -19,3 +19,15 @@ export const cartValidationRules = [
 
   handleValidationErrors,
 ];
+
+// Validation for removing items (only requires productId)
+export const removeItemValidationRules = [
+  body("productId")
+    .trim()
+    .notEmpty()
+    .withMessage("Product ID is required")
+    .isMongoId()
+    .withMessage("Product ID must be a valid MongoDB ObjectId"),
+
+  handleValidationErrors,
+];

@@ -7,8 +7,11 @@ import { z, ZodError } from "zod";
 const isFileLike = (value: unknown): value is File =>
   !!value &&
   typeof value === "object" &&
-  "name" in (value as any) &&
-  "size" in (value as any);
+  value !== null &&
+  "name" in value &&
+  "size" in value &&
+  typeof (value as { name?: unknown }).name === "string" &&
+  typeof (value as { size?: unknown }).size === "number";
 
 const buildFormData = (data: Partial<Product>) => {
   const form = new FormData();
@@ -159,20 +162,13 @@ export const productsService = {
       const payload = hasFileUpload ? buildFormData(data) : data;
 
       const response = await apiClient.post("/products", payload);
-      const parsed = productSchema.safeParse(
-        response.data.product || response.data,
-      );
-
-      if (!parsed.success) {
-        logZodError(productsLogger, "create", parsed.error, response.data);
-        throw new Error("Product validation failed");
-      }
 
       productsLogger.info(
-        { id: parsed.data._id },
+        { id: response.data._id },
         "Product created successfully",
       );
-      return parsed.data;
+
+      return response.data;
     } catch (error) {
       productsLogger.error({ error }, "Failed to create product");
       throw error;
@@ -186,20 +182,23 @@ export const productsService = {
         Array.isArray(data.images) &&
         data.images.some((img) => isFileLike(img));
 
-      const payload = hasFileUpload ? buildFormData(data) : data;
+      // Create payload without images if no new images are being uploaded
+      const payload = hasFileUpload ? buildFormData(data) : { ...data };
 
-      const response = await apiClient.put(`/products/${id}`, payload);
-      const parsed = productSchema.safeParse(
-        response.data.product || response.data,
-      );
-
-      if (!parsed.success) {
-        logZodError(productsLogger, "update", parsed.error, response.data);
-        throw new Error("Product validation failed");
+      // If no new images are being uploaded and payload is not FormData,
+      // remove the images field from payload to prevent overwriting existing images
+      if (
+        !hasFileUpload &&
+        !(payload instanceof FormData) &&
+        payload.images !== undefined
+      ) {
+        delete payload.images;
       }
 
+      const response = await apiClient.put(`/products/${id}`, payload);
+
       productsLogger.info({ id }, "Product updated successfully");
-      return parsed.data;
+      return response.data;
     } catch (error) {
       productsLogger.error({ error, id }, "Failed to update product");
       throw error;

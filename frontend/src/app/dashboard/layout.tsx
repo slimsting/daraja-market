@@ -66,7 +66,7 @@ export default function DashboardLayout({
               <span>My Products</span>
             </Link>
 
-            <Link
+            {/* <Link
               href="/dashboard/stats"
               className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
             >
@@ -80,7 +80,7 @@ export default function DashboardLayout({
             >
               <Settings className="h-5 w-5" />
               <span>Settings</span>
-            </Link>
+            </Link> */}
           </nav>
         </aside>
 

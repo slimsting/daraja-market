@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,11 +18,7 @@ import { ShoppingCart, User, LogOut, Package } from "lucide-react";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  console.log("Navbar auth state:", { user, isAuthenticated, isLoading });
-  console.log("user###", user);
-  console.log("user role###", user?.role);
-
-  // track whether the window has been scrolled down at all
+  const { data: cart } = useCart();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   React.useEffect(() => {
@@ -88,7 +85,11 @@ export function Navbar() {
               <Link href="/cart">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
-                  {/* Cart badge - we'll add count later */}
+                  {cart?.items && cart.items.length > 0 && (
+                    <span className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {cart.items.length}
+                    </span>
+                  )}
                 </Button>
               </Link>
             )}

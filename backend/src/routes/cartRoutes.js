@@ -10,7 +10,10 @@ import {
 } from "../controllers/cartController.js";
 import userAuth from "../middleware/userAuth.js";
 import authorize from "../middleware/authorize.js";
-import { cartValidationRules } from "../middleware/validators/cartValidator.js";
+import {
+  cartValidationRules,
+  removeItemValidationRules,
+} from "../middleware/validators/cartValidator.js";
 
 const cartRouter = express.Router();
 
@@ -31,7 +34,7 @@ cartRouter.put(
 cartRouter.delete(
   "/",
   userAuth,
-  cartValidationRules,
+  removeItemValidationRules,
   asyncHandler(removeCartItem),
 );
 cartRouter.delete("/clear-cart", userAuth, asyncHandler(clearCart));

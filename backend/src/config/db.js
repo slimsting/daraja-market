@@ -16,13 +16,12 @@ const connectDB = async () => {
       logger.warn("MongoDB disconnected");
     });
 
-    await mongoose.connect(`${process.env.MONGO_URI}/${process.env.DB_NAME}`, {
+    await mongoose.connect(`${process.env.MONGO_URI}`, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
 
     logger.info("Database connection established", {
-      database: process.env.DB_NAME,
       host: mongoose.connection.host,
     });
   } catch (error) {

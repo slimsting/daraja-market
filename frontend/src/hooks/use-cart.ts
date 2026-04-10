@@ -41,8 +41,13 @@ export function useUpdateCartItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
-      cartService.updateItem(itemId, quantity),
+    mutationFn: ({
+      productId,
+      quantity,
+    }: {
+      productId: string;
+      quantity: number;
+    }) => cartService.updateItem(productId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
     },
@@ -54,7 +59,7 @@ export function useRemoveFromCart() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (itemId: string) => cartService.removeItem(itemId),
+    mutationFn: (productId: string) => cartService.removeItem(productId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
     },

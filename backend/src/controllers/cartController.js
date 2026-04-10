@@ -6,6 +6,28 @@ import { sanitizeDocument } from "../utils/sanitizer.js";
 import { successResponse } from "../utils/responseHandler.js";
 import logger from "../utils/logger.js";
 
+// Helper function to transform cart data for frontend compatibility
+const transformCart = (cart) => {
+  if (!cart) return null;
+
+  const transformedItems = cart.items.map((item) => ({
+    ...item.toObject(),
+    price: item.product.price,
+    productId: item.product._id.toString(),
+  }));
+
+  const total = transformedItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
+  return {
+    ...cart.toObject(),
+    items: transformedItems,
+    total,
+  };
+};
+
 export const addToCart = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const { productId, quantity } = req.body;
@@ -38,12 +60,17 @@ export const addToCart = asyncHandler(async (req, res) => {
 
   await cart.save();
 
-  return successResponse(
-    res,
-    sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]),
-    "Item added to cart successfully",
-    200,
-  );
+  // Populate product details for response
+  await cart.populate("items.product", "name price unit category images");
+
+  const transformedCart = transformCart(cart);
+  const safeCart = sanitizeDocument(transformedCart, [
+    "__v",
+    "createdAt",
+    "updatedAt",
+  ]);
+
+  return successResponse(res, safeCart, "Item added to cart successfully", 200);
 });
 
 export const getCart = asyncHandler(async (req, res) => {
@@ -51,7 +78,7 @@ export const getCart = asyncHandler(async (req, res) => {
 
   const cart = await Cart.findOne({ user: userId }).populate(
     "items.product",
-    "name price unit category",
+    "name price unit category images",
   );
 
   if (!cart) {
@@ -60,7 +87,12 @@ export const getCart = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
+  const transformedCart = transformCart(cart);
+  const safeCart = sanitizeDocument(transformedCart, [
+    "__v",
+    "createdAt",
+    "updatedAt",
+  ]);
 
   return successResponse(res, safeCart, "Cart retrieved successfully", 200);
 });
@@ -72,7 +104,7 @@ export const updateCartItem = asyncHandler(async (req, res) => {
   // Find the user's cart
   const cart = await Cart.findOne({ user: userId }).populate(
     "items.product",
-    "name price unit category",
+    "name price unit category images",
   );
 
   if (!cart) {
@@ -101,8 +133,12 @@ export const updateCartItem = asyncHandler(async (req, res) => {
 
   await cart.save();
 
-  // Sanitize response
-  const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
+  const transformedCart = transformCart(cart);
+  const safeCart = sanitizeDocument(transformedCart, [
+    "__v",
+    "createdAt",
+    "updatedAt",
+  ]);
 
   return successResponse(res, safeCart, "Cart item updated successfully", 200);
 });
@@ -131,7 +167,15 @@ export const removeCartItem = asyncHandler(async (req, res) => {
   cart.items.splice(itemIndex, 1);
   await cart.save();
 
-  const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
+  // Populate product details for response
+  await cart.populate("items.product", "name price unit category images");
+
+  const transformedCart = transformCart(cart);
+  const safeCart = sanitizeDocument(transformedCart, [
+    "__v",
+    "createdAt",
+    "updatedAt",
+  ]);
 
   return successResponse(
     res,
@@ -154,7 +198,15 @@ export const clearCart = asyncHandler(async (req, res) => {
   cart.items = []; // empty the cart
   await cart.save();
 
-  const safeCart = sanitizeDocument(cart, ["__v", "createdAt", "updatedAt"]);
+  // Populate product details for response (though items is empty)
+  await cart.populate("items.product", "name price unit category images");
+
+  const transformedCart = transformCart(cart);
+  const safeCart = sanitizeDocument(transformedCart, [
+    "__v",
+    "createdAt",
+    "updatedAt",
+  ]);
 
   return successResponse(res, safeCart, "Cart cleared successfully", 200);
 });

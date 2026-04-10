@@ -43,7 +43,7 @@ export function LoginForm() {
     error instanceof ApiError ? error.message : (error?.message ?? null);
 
   return (
-    <Card className="w-full max-w-md shadow-lg">
+    <Card className="w-full max-w-md shadow-lg border-none bg-green-200">
       <CardHeader className="space-y-1 text-center">
         <div className="text-5xl mb-2">🌾</div>
         <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -67,7 +67,7 @@ export function LoginForm() {
               type="email"
               placeholder="farmer@example.com"
               {...register("email")}
-              className={errors.email ? "border-red-500" : ""}
+              className={`{errors.email ? "border-red-500" : ""} bg-white border-none text-slate-500`}
             />
             {errors.email && (
               <p className="text-red-500 text-xs">{errors.email.message}</p>
@@ -82,7 +82,7 @@ export function LoginForm() {
               type="password"
               placeholder="••••••••"
               {...register("password")}
-              className={errors.password ? "border-red-500" : ""}
+              className={`{errors.password ? "border-red-500" : ""} bg-white border-none text-slate-500`}
             />
             {errors.password && (
               <p className="text-red-500 text-xs">{errors.password.message}</p>
@@ -90,7 +90,11 @@ export function LoginForm() {
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button
+            type="submit"
+            className="w-full bg-green-500 hover:bg-green-600 text-white"
+            disabled={isPending}
+          >
             {isPending ? "Logging in..." : "Login"}
           </Button>
         </form>

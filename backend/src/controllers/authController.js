@@ -7,15 +7,6 @@ import CONFIG from "../config/constants.js";
 import logger from "../utils/logger.js";
 import { successResponse } from "../utils/responseHandler.js";
 
-/**
- * Register a new user
- * @description creates new user account and sets authentication cookie
- * @access Public
- * @route POST /api/auth/register
- * @param {Object} req Express request object
- * @param {Object*} res Express request object
- * @returns {Object} success message or error
- */
 export const register = asyncHandler(async (req, res) => {
   const registeringUserData = req.body;
   //does user the email exist in db
@@ -65,15 +56,6 @@ export const register = asyncHandler(async (req, res) => {
   return successResponse(res, null, "user registered successfully", 201);
 });
 
-/**
- * Login user
- * @description Authenticates user and sets authentication cookie
- * @access Public
- * @route POST /api/auth/login
- * @param {Object} req Express request object
- * @param {Object*} res Express request object
- * @returns {Object} success message or error
- */
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   //check if user is in db
@@ -115,30 +97,12 @@ export const login = asyncHandler(async (req, res) => {
   );
 });
 
-/**
- * Logout user
- * @description Clears authentication cookie
- * @access Public
- * @route POST /api/auth/logout
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Object} Success message
- */
 export const logout = asyncHandler(async (req, res) => {
   clearCookie(res);
 
   return successResponse(res, null, "Logged out successfully", 200);
 });
 
-/**
- * Get current user
- * @description
- * @access Private
- * @route Get /api/auth/me
- * @param {Object} req Express request object
- * @param {Object*} res Express request object
- * @returns {Object} success message with current user ifo or an error
- */
 export const getCurrentUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user.id;
 

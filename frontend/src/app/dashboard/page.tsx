@@ -1,10 +1,12 @@
-// src/app/dashboard/page.tsx
 "use client";
 
+import { useState } from "react";
 import { useMyProducts } from "@/hooks/use-products";
 import { useDeleteProduct } from "@/hooks/use-products";
 import { StatsCard } from "@/components/features/dashboard/stats-card";
 import { ProductsTable } from "@/components/features/dashboard/products-table";
+import { AddProductModal } from "@/components/modals/AddProductModal";
+import { EditProductModal } from "@/components/modals/EditProductModal";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
@@ -12,13 +14,18 @@ import {
   DollarSign,
   TrendingUp,
   AlertCircle,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import Link from "next/link";
 import { Product } from "@/types";
 
 export default function DashboardPage() {
   const { data: products, isLoading, error } = useMyProducts();
   const { mutate: deleteProduct } = useDeleteProduct();
+  const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   // Calculate stats
   const totalProducts = products?.length || 0;
@@ -28,8 +35,8 @@ export default function DashboardPage() {
   const availableProducts = products?.filter((p) => p.available).length || 0;
 
   const handleEdit = (product: Product) => {
-    // TODO: Open edit modal
-    console.log("Edit product:", product);
+    setEditingProduct(product);
+    setEditModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
@@ -38,26 +45,51 @@ export default function DashboardPage() {
     }
   };
 
+  const onProductCreated = () => {
+    // could show a toast in future
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto px-2 py-4 space-y-6 sm:space-y-8">
+      <AddProductModal
+        open={isAddModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onCreated={onProductCreated}
+      />
+      <EditProductModal
+        open={isEditModalOpen}
+        product={editingProduct}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingProduct(null);
+        }}
+        onUpdated={() => {
+          setEditModalOpen(false);
+          setEditingProduct(null);
+        }}
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-600 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+            Dashboard
+          </h1>
+          <p className="text-slate-600 mt-1 text-sm sm:text-base">
             Manage your products and track your sales
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/products/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Product
-          </Link>
+        <Button
+          onClick={() => setAddModalOpen(true)}
+          className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white"
+        >
+          <Plus className=" h-4 w-4" />
+          Add Product
         </Button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className=" grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
           title="Total Products"
           value={totalProducts}
@@ -86,24 +118,44 @@ export default function DashboardPage() {
 
       {/* Products Section */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-slate-900">My Products</h2>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/products">View All</Link>
-          </Button>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+            My Products
+          </h2>
+          {products && products.length > 5 && (
+            <Button
+              variant="outline"
+              onClick={() => setShowAllProducts(!showAllProducts)}
+              className="w-full sm:w-auto"
+            >
+              {showAllProducts ? (
+                <>
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All ({products.length})
+                </>
+              )}
+            </Button>
+          )}
         </div>
 
         {/* Loading State */}
         {isLoading && (
-          <div className="text-center py-12 bg-white rounded-lg border">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-slate-600">Loading products...</p>
+          <div className="text-center py-8 sm:py-12 bg-white rounded-lg border">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-slate-600 text-sm sm:text-base">
+              Loading products...
+            </p>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm sm:text-base">
             Failed to load products. Please try again.
           </div>
         )}
@@ -111,7 +163,7 @@ export default function DashboardPage() {
         {/* Products Table */}
         {!isLoading && products && (
           <ProductsTable
-            products={products.slice(0, 5)} // Show only first 5
+            products={showAllProducts ? products : products.slice(0, 5)}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

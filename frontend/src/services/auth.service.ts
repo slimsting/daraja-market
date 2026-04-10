@@ -45,28 +45,17 @@ export const authService = {
   },
 
   // Register
-  async register(data: RegisterData): Promise<User> {
+  async register(data: RegisterData): Promise<void> {
     try {
       const response = await apiClient.post("/auth/register", data);
       const validated = authResponseSchema.safeParse(response.data);
-
-      console.log("Register response:", response.data); // Debug log
 
       if (!validated.success) {
         logZodError(authLogger, "register", validated.error, response.data);
         throw new Error("Invalid register response");
       }
 
-      if (!validated.data.data) {
-        authLogger.error(
-          { response: response.data },
-          "No user in register response",
-        );
-        throw new Error("No user data in response");
-      }
-
       authLogger.info({ email: data.email }, "User registered successfully");
-      return validated.data.data;
     } catch (error) {
       if (error instanceof ZodError) {
         logZodError(authLogger, "register", error);

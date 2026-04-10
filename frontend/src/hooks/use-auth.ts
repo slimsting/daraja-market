@@ -56,7 +56,7 @@ export function useRegister() {
       // Update cache with user data
       queryClient.setQueryData(authKeys.currentUser, user);
       // Redirect to home
-      router.push("/");
+      router.push("/login");
       router.refresh();
     },
   });

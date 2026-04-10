@@ -70,9 +70,9 @@ export function RegisterForm() {
     error instanceof ApiError ? error.message : (error?.message ?? null);
 
   return (
-    <Card className="w-full max-w-md shadow-lg">
+    <Card className="w-full max-w-2xl shadow-lg bg-green-200 border-none">
       <CardHeader className="space-y-1 text-center">
-        <div className="text-5xl mb-2">🌾</div>
+        {/* <div className="text-5xl mb-2">🌾</div> */}
         <CardTitle className="text-2xl font-bold">Join Daraja Market</CardTitle>
         <CardDescription>Create your account to get started</CardDescription>
       </CardHeader>
@@ -86,110 +86,128 @@ export function RegisterForm() {
             </div>
           )}
 
-          {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              placeholder="John Doe"
-              {...registerField("name")}
-              className={errors.name ? "border-red-500" : ""}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-xs">{errors.name.message}</p>
-            )}
-          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="space-y-4">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  placeholder="John Doe"
+                  {...registerField("name")}
+                  className={`${errors.name ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs">{errors.name.message}</p>
+                )}
+              </div>
 
-          {/* Email Field */}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="farmer@example.com"
-              {...registerField("email")}
-              className={errors.email ? "border-red-500" : ""}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs">{errors.email.message}</p>
-            )}
-          </div>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="farmer@example.com"
+                  {...registerField("email")}
+                  className={`${errors.email ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                />
+                {errors.email && (
+                  <p className="text-red-500 text-xs">{errors.email.message}</p>
+                )}
+              </div>
 
-          {/* Phone Field */}
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+254 700 000 000"
-              {...registerField("phone")}
-              className={errors.phone ? "border-red-500" : ""}
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs">{errors.phone.message}</p>
-            )}
-          </div>
+              {/* Phone Field */}
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+254 700 000 000"
+                  {...registerField("phone")}
+                  className={`${errors.phone ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs">{errors.phone.message}</p>
+                )}
+              </div>
+            </div>
 
-          {/* Role Field */}
-          <div className="space-y-2">
-            <Label htmlFor="role">I am a...</Label>
-            <Select
-              defaultValue="farmer"
-              onValueChange={(value) =>
-                setValue("role", value as "farmer" | "broker")
-              }
-            >
-              <SelectTrigger className={errors.role ? "border-red-500" : ""}>
-                <SelectValue placeholder="Select your role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="farmer">
-                  🌾 Farmer - I want to sell products
-                </SelectItem>
-                <SelectItem value="broker">
-                  🤝 Broker - I want to buy products
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.role && (
-              <p className="text-red-500 text-xs">{errors.role.message}</p>
-            )}
-          </div>
+            <div className="space-y-4">
+              {/* Role Field */}
+              <div className="space-y-2">
+                <Label htmlFor="role">I am a...</Label>
+                <Select
+                  defaultValue="farmer"
+                  onValueChange={(value) =>
+                    setValue("role", value as "farmer" | "broker")
+                  }
+                >
+                  <SelectTrigger
+                    className={`${errors.role ? "border-red-500" : ""} bg-green-500 text-white border-none`}
+                  >
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent className=" bg-white border-none">
+                    <SelectItem value="farmer">
+                      <span className=" hover:text-green-500">
+                        Farmer - I want to sell products
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="broker" className=" hover:bg-green-500">
+                      <span className=" hover:text-green-500">
+                        Customer - I want to buy products
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.role && (
+                  <p className="text-red-500 text-xs">{errors.role.message}</p>
+                )}
+              </div>
 
-          {/* Password Field */}
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              {...registerField("password")}
-              className={errors.password ? "border-red-500" : ""}
-            />
-            {errors.password && (
-              <p className="text-red-500 text-xs">{errors.password.message}</p>
-            )}
-          </div>
+              {/* Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...registerField("password")}
+                  className={`${errors.password ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-xs">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
 
-          {/* Confirm Password Field */}
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              {...registerField("confirmPassword")}
-              className={errors.confirmPassword ? "border-red-500" : ""}
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-xs">
-                {errors.confirmPassword.message}
-              </p>
-            )}
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  {...registerField("confirmPassword")}
+                  className={`${errors.confirmPassword ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button
+            type="submit"
+            className="w-full bg-green-500 hover:bg-green-600 text-white"
+            disabled={isPending}
+          >
             {isPending ? "Creating Account..." : "Create Account"}
           </Button>
         </form>

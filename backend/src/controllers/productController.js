@@ -4,18 +4,6 @@ import asyncHandler from "express-async-handler";
 import { pickAllowedFields } from "../middleware/utils/utils.js";
 import { sanitizeDocument } from "../utils/sanitizer.js";
 
-const mergeUploadedImages = (body, files) => {
-  const existingImages = Array.isArray(body?.images) ? body.images : [];
-  const uploadedImages = Array.isArray(files)
-    ? files
-        .map((file) => file.path || file.secure_url || file.url)
-        .filter(Boolean)
-    : [];
-
-  const merged = [...existingImages, ...uploadedImages];
-  return merged.length ? merged : undefined;
-};
-
 export const createProduct = asyncHandler(async (req, res) => {
   const currentUserId = req.user?.id;
 
@@ -26,7 +14,11 @@ export const createProduct = asyncHandler(async (req, res) => {
   }
 
   const productData = req.body;
-  const images = mergeUploadedImages(productData, req.files);
+  const images = Array.isArray(productData.images)
+    ? productData.images
+    : undefined;
+
+  console.log("Creating product with data:", productData);
 
   const newProductData = {
     ...productData,
@@ -153,19 +145,6 @@ export const updateProductById = asyncHandler(async (req, res) => {
   ];
 
   const filteredUpdates = pickAllowedFields(updates, allowedFields);
-
-  // Preserve existing images and append any newly uploaded files
-  const uploadedImages = Array.isArray(req.files)
-    ? req.files
-        .map((file) => file.path || file.secure_url || file.url)
-        .filter(Boolean)
-    : [];
-  if (uploadedImages.length) {
-    const existingImages = Array.isArray(filteredUpdates.images)
-      ? filteredUpdates.images
-      : [];
-    filteredUpdates.images = [...existingImages, ...uploadedImages];
-  }
 
   // Update product
   Object.assign(product, filteredUpdates);
