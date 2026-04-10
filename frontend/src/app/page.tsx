@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/features/products/Product-card";
 import { ProductCardSkeleton } from "@/components/features/products/Product-card-skeleton";
 import { CategoryCard } from "@/components/features/categories/CategoryCard";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function HomePage() {
   const { data: products, isLoading, error } = useProducts();
@@ -19,6 +19,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = React.useState<string | null>(
     null,
   );
+  const [categoriesExpanded, setCategoriesExpanded] = React.useState(false);
 
   const filteredProducts = React.useMemo(() => {
     if (!products) return [];
@@ -55,38 +56,40 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Hero Section */}
-      <section className=" bg-cover bg-center bg-no-repeat bg-[url(https://images.unsplash.com/photo-1518843875459-f738682238a6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFybSUyMHByb2R1Y2V8ZW58MHwwfDB8fHwy)] bg-linear-to-r from-green-600 to-green-700 text-white py-20">
-        <div className="container mx-auto px-4  text-center">
-          <h1 className="text-5xl font-bold mb-4">
-            Direct Access to Kisii&apos;s Finest Harvest
-          </h1>
-          <p className="text-xl text-green-50 max-w-2xl mx-auto">
-            Connecting Daraja Mbili&apos;s trusted farmers with brokers
-            nationwide. <br />
-            <span className=" text-green-500 bg-black bg-opacity-20 px-2">
-              Real-time prices, verified quality.
-            </span>
-          </p>
+      <section className=" bg-fixed bg-cover bg-center bg-no-repeat bg-[url(https://images.unsplash.com/photo-1518843875459-f738682238a6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZmFybSUyMHByb2R1Y2V8ZW58MHwwfDB8fHwy)] bg-linear-to-r from-green-600 to-green-700 text-white">
+        <div className=" bg-slate-900/30 h-full py-20">
+          <div className="container opacity-100 mx-auto px-4  text-center">
+            <h1 className="text-5xl font-bold mb-4">
+              Direct Access to Kisii&apos;s Finest Harvest
+            </h1>
+            <p className="text-xl text-green-50 max-w-2xl mx-auto">
+              Connecting Daraja Mbili&apos;s trusted farmers with brokers
+              nationwide. <br />
+              <span className=" text-green-400 bg-opacity-20 px-2">
+                Real-time prices, verified quality.
+              </span>
+            </p>
 
-          {/* Search Form */}
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mb-6 flex justify-center mt-4"
-          >
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search crops..."
-              className="w-full max-w-md px-4 py-2 text-xl bg-white text-black border border-gray-300 rounded-l focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-500 text-white text-xl rounded-r hover:bg-green-600"
+            {/* Search Form */}
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="mb-6 flex justify-center mt-4"
             >
-              Search
-            </button>
-          </form>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search crops..."
+                className="w-full max-w-md px-4 py-2 text-xl bg-white text-black border border-gray-300 rounded-l focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-green-500 text-white text-xl rounded-r hover:bg-green-600"
+              >
+                Search
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
@@ -96,22 +99,46 @@ export default function HomePage() {
         <aside className="lg:w-1/6 md:border-r md:border-green-500">
           {!categoriesLoading && categories && categories.length > 0 && (
             <>
-              {/* small-screen card grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:hidden mb-8">
-                {categories.map((cat) => (
-                  <CategoryCard
-                    key={cat.category}
-                    category={cat.category}
-                    samples={cat.samples}
-                    onClick={() =>
-                      setSelectedCategory((prev) =>
-                        prev === cat.category ? null : cat.category,
-                      )
-                    }
-                    selected={selectedCategory === cat.category}
-                  />
-                ))}
+              {/* small-screen toggle button */}
+              <div className="lg:hidden mb-4">
+                <button
+                  onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+                  className="flex items-center justify-between w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors duration-200"
+                  aria-expanded={categoriesExpanded}
+                  aria-controls="categories-grid"
+                >
+                  <span className="font-medium text-green-800">
+                    Browse Categories
+                  </span>
+                  {categoriesExpanded ? (
+                    <ChevronUp className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-green-600" />
+                  )}
+                </button>
               </div>
+
+              {/* small-screen card grid */}
+              {categoriesExpanded && (
+                <div
+                  id="categories-grid"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 lg:hidden mb-8 transition-all duration-300 ease-in-out"
+                >
+                  {categories.map((cat) => (
+                    <CategoryCard
+                      key={cat.category}
+                      category={cat.category}
+                      samples={cat.samples}
+                      onClick={() =>
+                        setSelectedCategory((prev) =>
+                          prev === cat.category ? null : cat.category,
+                        )
+                      }
+                      selected={selectedCategory === cat.category}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* large-screen list */}
               <div className="hidden lg:block sticky top-20">

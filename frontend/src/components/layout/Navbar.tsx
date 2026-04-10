@@ -14,12 +14,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ShoppingCart, User, LogOut, Package } from "lucide-react";
+import { ShoppingCart, User, LogOut, Package, Menu, X } from "lucide-react";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { data: cart } = useCart();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -78,8 +79,23 @@ export function Navbar() {
             )}
           </div>
 
+          {/* Mobile Hamburger Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </Button>
+
           {/* Right Side - Cart & Auth */}
-          <div className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
             {/* Cart */}
             {isAuthenticated && (
               <Link href="/cart">
@@ -168,9 +184,9 @@ export function Navbar() {
                 <Button asChild className="bg-green-500 hover:bg-green-600">
                   <Link
                     href="/register"
-                    className="text-xl font-medium text-white hover:text-primary transition-colors"
+                    className="text-xl font-medium text-white transition-colors"
                   >
-                    Register
+                    Buy/Sell
                   </Link>
                 </Button>
               </div>
@@ -178,6 +194,98 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 bg-white shadow-sm">
+          <div className="container mx-auto px-4 py-5 space-y-4">
+            <Link
+              href="/"
+              className="block text-xl font-medium text-slate-600 hover:text-primary transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              href="/products"
+              className="block text-xl font-medium text-slate-600 hover:text-primary transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Products
+            </Link>
+            {isAuthenticated && user?.role === "farmer" && (
+              <Link
+                href="/dashboard"
+                className="block text-xl font-medium text-slate-600 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+            )}
+            {isLoading ? (
+              <div className="h-10 w-10 rounded-full bg-slate-200 animate-pulse" />
+            ) : isAuthenticated && user ? (
+              <div className="space-y-3">
+                <Link
+                  href="/cart"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-slate-700 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span>Cart</span>
+                  {cart?.items && cart.items.length > 0 && (
+                    <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                      {cart.items.length}
+                    </span>
+                  )}
+                </Link>
+                {user.role === "farmer" && (
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center rounded-lg border border-gray-200 px-4 py-3 text-slate-700 hover:bg-gray-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    My Products
+                  </Link>
+                )}
+                <Link
+                  href="/profile"
+                  className="flex items-center rounded-lg border border-gray-200 px-4 py-3 text-slate-700 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left text-red-600 hover:bg-red-100"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Link
+                  href="/login"
+                  className="block rounded-lg border border-gray-200 px-4 py-3 text-center text-xl font-medium text-slate-600 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="block rounded-lg bg-green-500 px-4 py-3 text-center text-xl font-medium text-white hover:bg-green-600"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

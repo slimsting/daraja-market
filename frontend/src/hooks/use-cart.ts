@@ -1,6 +1,11 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 import { cartService } from "@/services/cart.service";
 
 // Query keys
@@ -10,10 +15,11 @@ export const cartKeys = {
 };
 
 // Get cart
-export function useCart() {
+export function useCart(options?: UseQueryOptions) {
   return useQuery({
     queryKey: cartKeys.detail(),
     queryFn: cartService.getCart,
+    ...options,
   });
 }
 

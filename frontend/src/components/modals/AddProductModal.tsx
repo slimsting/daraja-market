@@ -68,6 +68,21 @@ export function AddProductModal({
   });
 
   const submitCreateProduct = async (data: FormValues) => {
+    console.log("Raw form data:", data);
+    console.log("Tags input:", data.tags);
+
+    const processedTags =
+      data.tags && typeof data.tags === "string"
+        ? data.tags.includes(",")
+          ? data.tags
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+          : [data.tags.trim()].filter(Boolean)
+        : [];
+
+    console.log("Processed tags:", processedTags);
+
     const payload: Partial<Product> = {
       name: data.name.trim(),
       category: data.category
@@ -80,16 +95,11 @@ export function AddProductModal({
       available: data.available,
       harvestDate: data.harvestDate || undefined,
       organic: data.organic,
-      tags: data.tags
-        ? data.tags.includes(",")
-          ? data.tags
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter(Boolean)
-          : [data.tags.trim()].filter(Boolean)
-        : [],
+      tags: processedTags,
       images: data.images ? Array.from(data.images) : undefined,
     };
+
+    console.log("Final payload:", payload);
 
     mutate(payload, {
       onSuccess: () => {
@@ -280,13 +290,17 @@ export function AddProductModal({
 
           <div>
             <Label htmlFor="tags" className="mb-2">
-              Tags (comma-separated)
+              Tags (optional)
             </Label>
             <Input
-              className="border-none bg-white"
+              className="border-none bg-white text-slate-500"
               id="tags"
+              placeholder="e.g. organic, fresh, local"
               {...register("tags")}
             />
+            <p className="text-xs text-slate-500 mt-1">
+              Enter tags separated by commas, or just one tag
+            </p>
           </div>
 
           <div>

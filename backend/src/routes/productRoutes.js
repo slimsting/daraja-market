@@ -35,12 +35,7 @@ productRouter.get("/categories", asyncHandler(getCategoriesWithSamples));
 
 productRouter.get("/", asyncHandler(getAllProducts));
 productRouter.get("/my-products", userAuth, asyncHandler(getAllMyProducts));
-productRouter.get(
-  "/:productId",
-  userAuth,
-  validateUserAndObjectId("productId"),
-  asyncHandler(getProductByID),
-);
+productRouter.get("/:productId", asyncHandler(getProductByID));
 productRouter.put(
   "/:productId",
   userAuth,
