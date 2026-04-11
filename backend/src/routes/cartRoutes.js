@@ -20,7 +20,7 @@ const cartRouter = express.Router();
 cartRouter.post(
   "/",
   userAuth,
-  authorize("broker"),
+  authorize("broker", "admin", "farmer"),
   cartValidationRules,
   asyncHandler(addToCart),
 );

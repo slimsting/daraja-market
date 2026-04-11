@@ -7,8 +7,10 @@ import {
   useCart,
   useRemoveFromCart,
   useUpdateCartItem,
+  useClearCart,
   useCheckout,
 } from "@/hooks/use-cart";
+import { Cart } from "@/types";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,13 +23,28 @@ import {
 } from "lucide-react";
 
 export default function CartPage() {
-  const { data: cart, isLoading, error } = useCart();
+  const {
+    data: cart,
+    isLoading,
+    error,
+  } = useCart() as {
+    data: Cart | undefined;
+    isLoading: boolean;
+    error: Error | null;
+  };
   const { mutate: removeItem, isPending: isRemoving } = useRemoveFromCart();
   const { mutate: updateItem, isPending: isUpdating } = useUpdateCartItem();
+  const { mutate: clearCart, isPending: isClearing } = useClearCart();
   const { mutate: checkout, isPending: isCheckingOut } = useCheckout();
 
   const handleRemove = (productId: string) => {
     removeItem(productId);
+  };
+
+  const handleClearCart = () => {
+    if (cart?.items && cart.items.length > 0) {
+      clearCart();
+    }
   };
 
   const handleUpdateQuantity = (productId: string, newQuantity: number) => {
@@ -65,24 +82,40 @@ export default function CartPage() {
                 <ShoppingCart className="h-8 w-8" />
                 Shopping Cart
               </h1>
-              <p className="text-green-50 mt-1">
+              <p className="text-green-50 font-bold ml-6 mt-1">
                 {isEmpty
                   ? "Your cart is empty"
                   : `${cart.items.length} item${cart.items.length !== 1 ? "s" : ""} in your cart`}
               </p>
             </div>
-            <Button asChild variant="secondary" className="w-full sm:w-auto">
-              <Link href="/products" className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Continue Shopping
-              </Link>
-            </Button>
+            <div className="flex flex-col gap-2 w-full sm:w-auto">
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full bg-amber-500 hover:bg-amber-600"
+              >
+                <Link href="/products" className="flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Continue Shopping
+                </Link>
+              </Button>
+              {!isEmpty && (
+                <Button
+                  onClick={handleClearCart}
+                  disabled={isClearing}
+                  variant="destructive"
+                  className="w-full bg-red-500 hover:bg-red-600"
+                >
+                  {isClearing ? "Clearing..." : "Clear Cart"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-12 px-12">
+      <section className="py-12 px-2 md:px-12">
         <div className="container mx-auto px-4">
           {error && (
             <Alert className="mb-6">
@@ -116,9 +149,10 @@ export default function CartPage() {
               {/* Cart Items */}
               <div className="space-y-4">
                 {cart.items.map((item) => (
-                  <div
+                  <Link
                     key={item._id}
-                    className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex gap-4 sm:gap-6"
+                    href={`/products/${item.productId}`}
+                    className="block bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex gap-4 sm:gap-6 hover:shadow-lg transition-shadow cursor-pointer"
                   >
                     {/* Product Image */}
                     <div className="relative h-24 w-24 sm:h-32 sm:w-32 shrink-0 rounded-xl overflow-hidden bg-slate-200">
@@ -139,14 +173,9 @@ export default function CartPage() {
 
                     {/* Product Details */}
                     <div className="flex-1 min-w-0">
-                      <Link
-                        href={`/products/${item.productId}`}
-                        className="block hover:text-green-600 transition-colors"
-                      >
-                        <h3 className="font-semibold text-slate-900 truncate">
-                          {item.product?.name || "Product"}
-                        </h3>
-                      </Link>
+                      <h3 className="font-semibold text-slate-900 truncate hover:text-green-600 transition-colors">
+                        {item.product?.name || "Product"}
+                      </h3>
                       <p className="text-slate-600 text-sm mb-2">
                         {item.product?.category || "Uncategorized"}
                       </p>
@@ -161,14 +190,18 @@ export default function CartPage() {
                         </div>
 
                         {/* Quantity Controls */}
-                        <div className="flex items-center gap-3">
+                        <div
+                          className="flex items-center gap-3"
+                          onClick={(e) => e.preventDefault()}
+                        >
                           <button
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleUpdateQuantity(
                                 item.productId,
                                 item.quantity - 1,
-                              )
-                            }
+                              );
+                            }}
                             disabled={isUpdating || item.quantity <= 1}
                             className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
@@ -185,14 +218,16 @@ export default function CartPage() {
                             }}
                             disabled={isUpdating}
                             className="w-12 text-center border border-slate-300 rounded-lg py-1 disabled:opacity-50"
+                            onClick={(e) => e.stopPropagation()}
                           />
                           <button
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleUpdateQuantity(
                                 item.productId,
                                 item.quantity + 1,
-                              )
-                            }
+                              );
+                            }}
                             disabled={isUpdating}
                             className="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
@@ -211,14 +246,18 @@ export default function CartPage() {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleRemove(item.productId)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemove(item.productId);
+                        }}
                         disabled={isRemoving}
                         className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

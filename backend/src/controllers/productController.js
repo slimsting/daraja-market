@@ -41,7 +41,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   // All authenticated users can view products
   const products = await Product.find()
     .select("-__v -createdAt -updatedAt")
-    .populate("farmer", "name email phone")
+    .populate("farmer", "name email phone location")
     .lean();
 
   return successResponse(res, products, "Successfully retrieved products");
@@ -79,7 +79,7 @@ export const getAllMyProducts = asyncHandler(async (req, res) => {
 
   const products = await Product.find({ farmer: req.user.id })
     .select("-__v -createdAt -updatedAt")
-    .populate("farmer", "name email phone")
+    .populate("farmer", "name email phone location")
     .lean();
 
   return successResponse(
@@ -94,7 +94,7 @@ export const getProductByID = asyncHandler(async (req, res) => {
 
   const product = await Product.findById(productId)
     .select("-__v")
-    .populate("farmer", "name email phone")
+    .populate("farmer", "name email phone location")
     .lean(); // return plain JS objects for performance
 
   if (!product) {

@@ -94,7 +94,7 @@ export default function HomePage() {
       </section>
 
       {/* Browse by Category / Products Layout */}
-      <div className="container mx-auto px-12 py-12 lg:flex lg:space-x-8">
+      <div className="container mx-auto px-6 md:px-12 py-12 lg:flex lg:space-x-8">
         {/* sidebar */}
         <aside className="lg:w-1/6 md:border-r md:border-green-500">
           {!categoriesLoading && categories && categories.length > 0 && (
@@ -152,7 +152,7 @@ export default function HomePage() {
                             prev === cat.category ? null : cat.category,
                           )
                         }
-                        className={`w-full text-left py-2 px-4 rounded transition-colors duration-150 capitalize ${
+                        className={`w-full hover:bg-green-100 text-left py-2 px-4 rounded transition-colors duration-150 capitalize ${
                           selectedCategory === cat.category
                             ? "bg-green-200"
                             : "hover:bg-gray-100"

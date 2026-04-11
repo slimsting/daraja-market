@@ -3,8 +3,7 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Product } from "@/types";
-import { useAuth } from "@/hooks/use-auth";
+import { Product, Cart, CartItem } from "@/types";
 import { useAddToCart, useCart } from "@/hooks/use-cart";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-  const { data: cart } = useCart({ enabled: isAuthenticated });
+  const { data: cart } = useCart() as { data: Cart | undefined };
   const imageSrc =
     typeof product.images?.[0] === "string"
       ? product.images[0]
@@ -26,7 +24,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { mutate: addToCart, isPending } = useAddToCart();
 
   const isInCart = cart?.items?.some(
-    (item) => String(item.productId) === String(product._id),
+    (item: CartItem) => String(item.productId) === String(product._id),
   );
 
   const handleCardClick = () => {

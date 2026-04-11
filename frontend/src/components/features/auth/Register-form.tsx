@@ -1,6 +1,7 @@
 // src/components/features/auth/register-form.tsx
 "use client";
 
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -56,12 +57,18 @@ export function RegisterForm() {
       password: "",
       confirmPassword: "",
       role: "farmer",
+      location: "",
     },
   });
+
+  const [selectedRole, setSelectedRole] = useState<"farmer" | "broker">(
+    "farmer",
+  );
 
   const onSubmit = (data: RegisterFormData) => {
     // Remove confirmPassword before sending to API
     const { confirmPassword, ...registerData } = data;
+    void confirmPassword;
     register(registerData);
   };
 
@@ -131,6 +138,23 @@ export function RegisterForm() {
                   <p className="text-red-500 text-xs">{errors.phone.message}</p>
                 )}
               </div>
+
+              {selectedRole === "farmer" && (
+                <div className="space-y-2">
+                  <Label htmlFor="location">Farm Location</Label>
+                  <Input
+                    id="location"
+                    placeholder="Nairobi, Kenya"
+                    {...registerField("location")}
+                    className={`${errors.location ? "border-red-500" : ""} bg-white text-slate-500 border-none`}
+                  />
+                  {errors.location && (
+                    <p className="text-red-500 text-xs">
+                      {errors.location.message}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -139,9 +163,11 @@ export function RegisterForm() {
                 <Label htmlFor="role">I am a...</Label>
                 <Select
                   defaultValue="farmer"
-                  onValueChange={(value) =>
-                    setValue("role", value as "farmer" | "broker")
-                  }
+                  onValueChange={(value) => {
+                    const roleValue = value as "farmer" | "broker";
+                    setValue("role", roleValue);
+                    setSelectedRole(roleValue);
+                  }}
                 >
                   <SelectTrigger
                     className={`${errors.role ? "border-red-500" : ""} bg-green-500 text-white border-none`}

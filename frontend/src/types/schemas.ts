@@ -8,13 +8,7 @@ export const userSchema = z
   .object({
     _id: z.string().optional(),
     name: z.string(),
-    location: z
-      .object({
-        county: z.string().optional(),
-        subCounty: z.string().optional(),
-        ward: z.string().optional(),
-      })
-      .optional(),
+    location: z.string().optional(),
     email: z.string().email(),
     phone: z.string().optional(),
     role: userRoleSchema.optional(),
@@ -107,6 +101,7 @@ export const registerSchema = z.object({
       "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
     ),
   role: userRoleSchema,
+  location: z.string().optional(),
 });
 
 // ==================== API RESPONSE SCHEMAS ====================

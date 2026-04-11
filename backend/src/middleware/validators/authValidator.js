@@ -41,6 +41,10 @@ export const registerValidationRules = [
     .optional()
     .isString()
     .withMessage("admin registration code must be a string"),
+  body("location")
+    .optional()
+    .isString()
+    .withMessage("Location must be a valid string"),
   handleValidationErrors,
 ];
 

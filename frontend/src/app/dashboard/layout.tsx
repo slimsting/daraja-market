@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Package, Settings, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Package } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -15,9 +15,12 @@ export default function DashboardLayout({
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  // Redirect if not authenticated or not a farmer
+  // Redirect if not authenticated or not a farmer/admin
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== "farmer")) {
+    if (
+      !isLoading &&
+      (!isAuthenticated || (user?.role !== "farmer" && user?.role !== "admin"))
+    ) {
       router.push("/login");
     }
   }, [isLoading, isAuthenticated, user, router]);
@@ -33,7 +36,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (!user || user.role !== "farmer") {
+  if (!user || (user.role !== "farmer" && user.role !== "admin")) {
     return null;
   }
 
@@ -63,7 +66,9 @@ export default function DashboardLayout({
               className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
             >
               <Package className="h-5 w-5" />
-              <span>My Products</span>
+              <span>
+                {user.role === "admin" ? "All Products" : "My Products"}
+              </span>
             </Link>
 
             {/* <Link

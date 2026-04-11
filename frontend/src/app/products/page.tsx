@@ -50,7 +50,7 @@ export default function ProductsPage() {
       <section className="bg-linear-to-r from-green-600 to-green-700 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4">Our Products</h1>
+            <h1 className="text-4xl font-bold mb-4">Our Marketplace</h1>
             <p className="text-xl text-green-50 max-w-2xl mx-auto">
               Discover fresh, locally grown products from trusted farmers across
               Kisii
@@ -154,7 +154,7 @@ export default function ProductsPage() {
       </section>
 
       {/* Products Section */}
-      <section className="py-12 px-12">
+      <section className="py-12 px-4 md:px-12">
         <div className="container mx-auto px-4">
           {/* Results Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">

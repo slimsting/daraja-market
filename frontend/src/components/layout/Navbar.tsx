@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
+import { Cart } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import { ShoppingCart, User, LogOut, Package, Menu, X } from "lucide-react";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { data: cart } = useCart();
+  const { data: cart } = useCart() as { data: Cart | undefined };
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -43,7 +44,7 @@ export function Navbar() {
 
   return (
     <nav
-      className={`${isScrolled ? " opacity-90 backdrop-blur-xl bg-white" : "bg-white"} sticky top-0 z-50 shadow-sm transition-colors duration-300`}
+      className={`${isScrolled ? " md:opacity-90 backdrop-blur-xl bg-white" : "bg-white"} sticky top-0 z-50 shadow-sm transition-colors duration-300`}
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
@@ -59,24 +60,25 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
-              className=" text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
+              className="  text-xl font-medium text-slate-600  hover:text-green-600 transition-colors hover:scale-105"
             >
               Home
             </Link>
             <Link
               href="/products"
-              className="text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
+              className="text-xl font-medium text-slate-600 hover:text-green-600 transition-colors hover:scale-105"
             >
               Products
             </Link>
-            {isAuthenticated && user?.role === "farmer" && (
-              <Link
-                href="/dashboard"
-                className="text-xl font-medium text-slate-600 hover:text-primary transition-colors hover:scale-105"
-              >
-                Dashboard
-              </Link>
-            )}
+            {isAuthenticated &&
+              (user?.role === "farmer" || user?.role === "admin") && (
+                <Link
+                  href="/dashboard"
+                  className="text-xl font-medium text-slate-600 hover:text-green-600 transition-colors hover:scale-105"
+                >
+                  Dashboard
+                </Link>
+              )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -148,7 +150,18 @@ export function Navbar() {
                         className="cursor-pointer text-green-500"
                       >
                         <Package className="mr-2 h-4 w-4" />
-                        My Products
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {user.role === "admin" && (
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/dashboard"
+                        className="cursor-pointer text-green-500"
+                      >
+                        <Package className="mr-2 h-4 w-4" />
+                        Admin Dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}

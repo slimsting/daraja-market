@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useMyProducts } from "@/hooks/use-products";
+import { useMyProducts, useProducts } from "@/hooks/use-products";
 import { useDeleteProduct } from "@/hooks/use-products";
+import { useAuth } from "@/hooks/use-auth";
 import { StatsCard } from "@/components/features/dashboard/stats-card";
 import { ProductsTable } from "@/components/features/dashboard/products-table";
 import { AddProductModal } from "@/components/modals/AddProductModal";
@@ -20,7 +21,21 @@ import {
 import { Product } from "@/types";
 
 export default function DashboardPage() {
-  const { data: products, isLoading, error } = useMyProducts();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const {
+    data: myProducts,
+    isLoading: myLoading,
+    error: myError,
+  } = useMyProducts();
+  const {
+    data: allProducts,
+    isLoading: allLoading,
+    error: allError,
+  } = useProducts();
+  const products = isAdmin ? allProducts : myProducts;
+  const isLoading = isAdmin ? allLoading : myLoading;
+  const error = isAdmin ? allError : myError;
   const { mutate: deleteProduct } = useDeleteProduct();
   const [isAddModalOpen, setAddModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
@@ -73,10 +88,12 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            Dashboard
+            {isAdmin ? "All Products" : "My Products"}
           </h1>
           <p className="text-slate-600 mt-1 text-sm sm:text-base">
-            Manage your products and track your sales
+            {isAdmin
+              ? "Manage all products in the marketplace"
+              : "Manage your products and track your sales"}
           </p>
         </div>
         <Button

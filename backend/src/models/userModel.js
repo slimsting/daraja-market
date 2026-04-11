@@ -12,11 +12,7 @@ const userSchema = new mongoose.Schema(
     },
     adminRegCode: { type: String },
     phone: { type: String, required: true },
-    location: {
-      county: String,
-      subCounty: String,
-      ward: String,
-    },
+    location: { type: String },
   },
   { timestamps: true },
 );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useState } from "react";
 import { useProduct } from "@/hooks/use-products";
+import { useAuth } from "@/hooks/use-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,10 @@ export default function ProductDetailsPage() {
   const params = useParams();
   const productId = params?.id as string | undefined;
   const { data: product, isLoading, error } = useProduct(productId || "");
+  const { user, isAuthenticated } = useAuth();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  console.log("farmer location maneno", product?.farmer);
 
   // Reset selected image index when product changes
   React.useEffect(() => {
@@ -42,8 +46,8 @@ export default function ProductDetailsPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="container mx-auto px-6 md:px-12">
+        <div className="flex flex-col sm:flex-row sm:items-center  sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
               Product Details
@@ -219,8 +223,7 @@ export default function ProductDetailsPage() {
                     <span>
                       {typeof product.farmer === "string"
                         ? "Farm location not available"
-                        : product.farmer?.location?.county ||
-                          "Location not specified"}
+                        : product.farmer?.location || "Location not specified"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -241,9 +244,11 @@ export default function ProductDetailsPage() {
                   >
                     <Link href="/">Browse more products</Link>
                   </Button>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link href="/dashboard">Manage my products</Link>
-                  </Button>
+                  {isAuthenticated && user?.role === "farmer" && (
+                    <Button variant="outline" className="w-full" asChild>
+                      <Link href="/dashboard">Manage my products</Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </aside>
