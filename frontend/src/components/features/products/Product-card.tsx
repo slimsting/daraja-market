@@ -9,14 +9,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import React from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { user } = useAuth();
   const router = useRouter();
   const { data: cart } = useCart() as { data: Cart | undefined };
+  const isOwnProduct =
+    typeof product?.farmer === "object" && product?.farmer !== null
+      ? user?._id === product?.farmer?._id
+      : user?._id === product?.farmer;
+
   const imageSrc =
     typeof product.images?.[0] === "string"
       ? product.images[0]
@@ -26,13 +33,17 @@ export function ProductCard({ product }: ProductCardProps) {
   const isInCart = cart?.items?.some(
     (item: CartItem) => String(item.productId) === String(product._id),
   );
-
   const handleCardClick = () => {
     router.push(`/products/${product._id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("user kwa product", user);
+    if (!user) {
+      router.push("/login");
+    }
+
     if (isInCart) return;
     addToCart({ productId: String(product._id), quantity: 1 });
   };
@@ -75,11 +86,19 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <Button
           onClick={handleAddToCart}
-          disabled={isPending || product.quantity === 0 || isInCart}
+          disabled={
+            isPending || product.quantity === 0 || isInCart || isOwnProduct
+          }
           className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 mt-2 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           <ShoppingCart className="h-4 w-4" />
-          {isPending ? "Adding..." : isInCart ? "In Cart" : "Add to Cart"}
+          {isPending
+            ? "Adding..."
+            : isInCart
+              ? "In Cart"
+              : isOwnProduct
+                ? "Your Product"
+                : "Add to Cart"}
         </Button>
       </CardContent>
     </Card>

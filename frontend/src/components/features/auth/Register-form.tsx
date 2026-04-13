@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Leaf } from "lucide-react";
 
 // Extend register schema with confirmPassword
 const registerFormSchema = registerSchema
@@ -79,7 +80,9 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-2xl shadow-lg bg-green-200 border-none">
       <CardHeader className="space-y-1 text-center">
-        {/* <div className="text-5xl mb-2">🌾</div> */}
+        <div className="text-5xl mb-2 flex items-center justify-center">
+          <Leaf />
+        </div>
         <CardTitle className="text-2xl font-bold">Join Daraja Market</CardTitle>
         <CardDescription>Create your account to get started</CardDescription>
       </CardHeader>

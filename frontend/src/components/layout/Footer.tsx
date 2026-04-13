@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Leaf } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -10,7 +11,9 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <span className="text-3xl">🌾</span>
+              <span className="text-3xl font-bold">
+                <Leaf className=" text-green-500" />
+              </span>
               <span className="text-xl font-bold">Daraja Market</span>
             </div>
             <p className="text-slate-400 text-sm">

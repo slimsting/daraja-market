@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Leaf } from "lucide-react";
 
 export function LoginForm() {
   const { mutate: login, isPending, error } = useLogin();
@@ -45,8 +46,10 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-lg border-none bg-green-200">
       <CardHeader className="space-y-1 text-center">
-        <div className="text-5xl mb-2">🌾</div>
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+        <div className="text-5xl mb-2 flex items-center justify-center">
+          <Leaf />
+        </div>
+        <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
         <CardDescription>Login to access Daraja Market</CardDescription>
       </CardHeader>
 
@@ -67,7 +70,7 @@ export function LoginForm() {
               type="email"
               placeholder="farmer@example.com"
               {...register("email")}
-              className={`{errors.email ? "border-red-500" : ""} bg-white border-none text-slate-500`}
+              className={`${errors.email ? "border-red-500" : ""} bg-white border-none text-slate-500`}
             />
             {errors.email && (
               <p className="text-red-500 text-xs">{errors.email.message}</p>
@@ -82,7 +85,7 @@ export function LoginForm() {
               type="password"
               placeholder="••••••••"
               {...register("password")}
-              className={`{errors.password ? "border-red-500" : ""} bg-white border-none text-slate-500`}
+              className={`${errors.password ? "border-red-500" : ""} bg-white border-none text-slate-500`}
             />
             {errors.password && (
               <p className="text-red-500 text-xs">{errors.password.message}</p>
@@ -102,10 +105,10 @@ export function LoginForm() {
 
       <CardFooter className="flex flex-col space-y-2 text-center text-sm">
         <p className="text-slate-600">
-          Don{`&apos`}t have an account?{" "}
+          Don{`&#39`}t have an account?
           <Link
             href="/register"
-            className="text-primary font-semibold hover:underline"
+            className="text-primary pl-2 font-semibold hover:underline"
           >
             Register here
           </Link>

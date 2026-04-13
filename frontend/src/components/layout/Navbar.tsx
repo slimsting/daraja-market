@@ -15,7 +15,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ShoppingCart, User, LogOut, Package, Menu, X } from "lucide-react";
+import {
+  ShoppingCart,
+  User,
+  LogOut,
+  Package,
+  Menu,
+  X,
+  Leaf,
+} from "lucide-react";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -50,7 +58,9 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl">🌾</span>
+            <span className="text-2xl">
+              <Leaf className=" text-green-500" />
+            </span>
             <span className="text-2xl font-bold text-primary">
               Daraja Market
             </span>
@@ -60,13 +70,13 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/"
-              className="  text-xl font-medium text-slate-600  hover:text-green-600 transition-colors hover:scale-105"
+              className="  text-xl font-medium text-slate-600  hover:text-green-600 transition-all hover:scale-105 duration-300"
             >
               Home
             </Link>
             <Link
               href="/products"
-              className="text-xl font-medium text-slate-600 hover:text-green-600 transition-colors hover:scale-105"
+              className="text-xl font-medium text-slate-600 hover:text-green-600 transition-all hover:scale-105 duration-300"
             >
               Products
             </Link>
@@ -74,7 +84,7 @@ export function Navbar() {
               (user?.role === "farmer" || user?.role === "admin") && (
                 <Link
                   href="/dashboard"
-                  className="text-xl font-medium text-slate-600 hover:text-green-600 transition-colors hover:scale-105"
+                  className="text-xl font-medium text-slate-600 hover:text-green-600 transition-all hover:scale-105 duration-300"
                 >
                   Dashboard
                 </Link>

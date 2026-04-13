@@ -61,11 +61,15 @@ export function ProductsTable({
                 <td className="px-3 sm:px-6 py-4">
                   <div className="flex items-center">
                     <div className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 bg-gradient-to-br from-green-400 to-primary rounded-lg flex items-center justify-center">
-                      <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="object-cover rounded-lg h-full w-full"
-                      />
+                      {product.images[0] &&
+                      typeof product.images[0] === "string" ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                      ) : null}
                     </div>
                     <div className="ml-3 sm:ml-4">
                       <div className="text-sm font-medium text-slate-900">
@@ -135,7 +139,9 @@ export function ProductsTable({
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                      onClick={() => onDelete(product._id)}
+                      onClick={() => {
+                        if (product._id) onDelete(product._id);
+                      }}
                     >
                       <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>

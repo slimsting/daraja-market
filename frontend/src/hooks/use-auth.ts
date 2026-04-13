@@ -56,7 +56,7 @@ export function useRegister() {
       // Update cache with user data
       queryClient.setQueryData(authKeys.currentUser, user);
       // Redirect to home
-      router.push("/login");
+      router.push("/");
       router.refresh();
     },
   });
@@ -74,8 +74,8 @@ export function useLogout() {
       queryClient.setQueryData(authKeys.currentUser, null);
       // Clear all queries
       queryClient.clear();
-      // Redirect to login
-      router.push("/login");
+      // Redirect to home
+      router.push("/");
     },
   });
 }
